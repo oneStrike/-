@@ -1,11 +1,13 @@
 <template>
-
+  
 </template>
+
 <script>
   export default {
-    name: 'App',
+    name: "recommed"
   }
 </script>
-<style>
+
+<style scoped>
 
 </style>
