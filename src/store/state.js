@@ -1,2 +1,4 @@
-const state = {}
-export default state;
+export default {
+  banners: [],
+  songList: []
+}
