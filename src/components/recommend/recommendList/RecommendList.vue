@@ -6,10 +6,11 @@
     <!--    歌曲列表-->
     <div v-if="song" class="wrapper-song">
       <ul class="content">
-        <li v-for="(item,index) in song" :key="item.id">
+        <li v-for="item in song" :key="item.id">
           <figure>
             <!--          lazyload实现图片懒加载-->
-            <img v-lazy="item.picUrl" :alt="item.copywriter"/>
+            <img v-lazy="item.picUrl" :alt="item.copywriter"
+                 @click="playCurrentSong({cover:item.picUrl,id:item.id,name:item.name,singer:item.song.artists[0].name,time:item.song.bMusic.playTime})"/>
             <figcaption>{{item.name}}</figcaption>
             <span>{{item.song.artists[0].name}}</span>
           </figure>
@@ -19,11 +20,11 @@
     <!--    歌单列表-->
     <div v-if="songList" class="wrapper-songList">
       <ul class="content">
-        <li v-for="(item,index) in songList" :key="item.id">
+        <li v-for="item in songList" :key="item.id">
           <figure>
             <div class="play-count">
               <i class="iconfont icon-erji"></i>
-              <span>{{item.playCount|rePlayCount(that)}}</span>
+              <span>{{item.playCount|rePlayCount}}</span>
             </div>
             <!--          lazyload实现图片懒加载-->
             <img v-lazy="item.picUrl" :alt="item.copywriter"/>
@@ -35,7 +36,7 @@
     <!--    电台列表-->
     <div v-if="djprogram" class="wrapper-djprogram">
       <ul class="content">
-        <li v-for="(item,index) in djprogram" :key="item.id">
+        <li v-for="item in djprogram" :key="item.id">
           <figure>
             <!--          lazyload实现图片懒加载-->
             <img v-lazy="item.picUrl" :alt="item.copywriter"/>
@@ -49,16 +50,18 @@
 
 <script>
   import BScroll from 'better-scroll';
+  import {utils} from '@/utils/utils';
+  import {mapState} from "vuex"
 
   export default {
     name: "RecommendList",
     data() {
       return {
-        that: this,
+        songID: null,
+        repetitionSong: [],
       }
     },
     props: {
-      //=>展示的数据
       song: {
         type: Array
       },
@@ -68,59 +71,62 @@
       djprogram: {
         type: Array,
       },
-      //=>功能title
       title: {
         type: String,
         required: true
       },
-      //=>是否展示歌手
-      singer: {
-        type: Boolean,
-        default: false,
-      },
-      //=>是否展示播放次数
-      playCount: {
-        type: Boolean,
-        default: false
-      }
+    },
+    computed: {
+      ...mapState({
+        isPlay: state => state.playPage.isPlay
+      })
     },
     methods: {
-      reCount(num) {
-        num += '';
-        if (num.length < 5) return;
-        if (num.length < 9) {
-          return Number(num.slice(0, -4)) + '万'
-        } else if (num.length >= 9) {
-          let reNum = num.slice(0, -7);
-          reNum = reNum.slice(0, -1) + '.' + reNum.slice(-1);
-          return Number(reNum) + '亿'
-        }
-      },
       initScroll(container) {
         new BScroll(container, {
           scrollX: true,
           eventPassthrough: 'vertical'
         })
-      }
-    },
-    filters: {
-      rePlayCount(playCount, that) {
-        //=>that > 过滤器无法获取this，需要缓存
-        switch ((playCount + '').length) {
-          case 5:
-            return that.reCount(playCount)
-          case 6:
-            return that.reCount(playCount)
-          case 7:
-            return that.reCount(playCount)
-          case 8:
-            return that.reCount(playCount)
-          default:
-            return that.reCount(playCount)
+      },
+      //如果请求较慢时，点击时则无法获取数据，没有数据时不做任何处理
+      playCurrentSong(songInfo) {
+        if (!songInfo) return
+        this.$store.commit('getPlayData', songInfo);
+        this.$store.commit('playShow', true);
+        this.$store.dispatch('getSongURL', songInfo.id);
+        //=>如果没有此项判断，会无视播放状态直接开启定时器和封面旋转，
+        if (!this.songID) {
+          //=>按需加载播放页面，this.songID为空说明时第一次进入播放页面
+          this.$store.commit('dynamic', 'playPage');
+          this.songID = songInfo.id;
+          this.repetitionSong.push(songInfo.id);
+          this.$store.commit('setLatelyList', songInfo)
+          return;
+        }
+        if (this.songID === songInfo.id && this.isPlay) {
+          //=>this.songID === songInfo.id说明点击的都是同一首歌曲，只有当这首歌是播放状态才开始旋转和定时器
+          this.$store.commit('setRotateAndTimer', true);
+          this.songID = songInfo.id;
+          return
+        }
+        if (this.songID !== songInfo.id) {
+          this.$store.commit('setRotateAndTimer', true);
+          this.songID = songInfo.id;
+          if (this.repetitionSong.indexOf(songInfo.id) === -1) {
+            this.repetitionSong.push(songInfo.id);
+            this.$store.commit('setLatelyList', songInfo)
+          }
         }
       }
     },
+    filters: {
+      //=>格式化歌单的播放次数
+      rePlayCount(playCount) {
+        return utils.reNum(playCount)
+      }
+    },
     watch: {
+      //=>延迟初始化better-scroll，以保证功能的正常使用
       song() {
         this.$nextTick(() => {
           this.initScroll('.wrapper-song')
@@ -141,7 +147,7 @@
 </script>
 
 <style scoped lang="less">
-  @import "./src/assets/less/mixins";
+  @import "@less/mixins";
 
   .recommend-list {
     width: 100%;

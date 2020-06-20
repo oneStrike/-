@@ -18,3 +18,7 @@ export const getDjprogram = () => instance.get('/personalized/djprogram')
 //所有榜单内容摘要
 
 export const getTopListDetail = () => instance.get('/toplist/detail')
+
+//音乐播放地址,需要传入歌曲id
+
+export const getSongURL = (id) => instance.get(`/song/url?id=${id}`)

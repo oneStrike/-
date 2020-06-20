@@ -2,7 +2,7 @@ const path = require('path');
 const px2rem = require('postcss-px2rem');
 
 module.exports = {
-  lintOnSave: false,
+  // lintOnSave: false,
   css: {
     loaderOptions: {
       postcss: {
@@ -24,6 +24,19 @@ module.exports = {
         },
         changeOrigin: true, // 支持跨域, 如果协议/主机也不相同, 必须加上
       },
+    }
+  },
+  configureWebpack: {
+    resolve: {
+      extensions: ['.js', '.vue', '.json'],
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+        '@common': path.resolve(__dirname, 'src/components/common/'),
+        '@recommend': path.resolve(__dirname, 'src/components/recommend/'),
+        '@profile': path.resolve(__dirname, 'src/components/profile/'),
+        '@playpage': path.resolve(__dirname, 'src/components/playPage'),
+        '@less': path.resolve(__dirname, 'src/assets/less/')
+      }
     }
   }
 }

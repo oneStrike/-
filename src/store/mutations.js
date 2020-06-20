@@ -20,7 +20,7 @@ export default {
     state.djprogram = data.result;
   },
   [GET_TOP_LIST_DETAIL](state, data) {
-    state.topListDetail = data.list.splice(0,4);
+    state.topListDetail = data.list.splice(0, 4);
     data = null;
-  }
+  },
 };

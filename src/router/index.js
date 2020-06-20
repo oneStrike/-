@@ -5,8 +5,8 @@ Vue.use(VueRouter);
 
 //懒加载路由组件
 const recommend = () => import('../views/recommend/Recommend')
-const rank = () => import('../views/rank/Rank')
-const singer = () => import('../views/singer/Singer')
+const Profile = () => import('../views/profile/Profile')
+const PlayPage = () => import('../views/playPage/PlayPage')
 
 const routes = [
   {
@@ -18,12 +18,12 @@ const routes = [
     component: recommend
   },
   {
-    path: '/rank',
-    component: rank,
+    path: '/profile',
+    component: Profile,
   },
   {
-    path: '/singer',
-    component: singer
+    path: '/playpage',
+    component: PlayPage
   }
 ];
 

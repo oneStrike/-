@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script>
+    (function () {
+      function setREM() {
+        //=>获取HTML标签
+        let rootTag = document.documentElement;
+        //=>获取当前设备的物理宽度
+        let windowW = rootTag.clientWidth;
+        //=>如果设备宽度大于640不做处理
+        if (windowW > 640) {
+          rootTag.style.fontSize = 100 + "px";
+          document.body.style.fontSize = 16 + 'px';
+          return;
+        }
+        //=>将设备宽度除以640乘以100，方便换算rem，将计算后的结果赋值给HTML标签的font-size属性
+        rootTag.style.fontSize = windowW / 640 * 100 + "px";
+        //=>设置body的font-size为16px
+        document.body.style.fontSize = 16 + 'px';
+      }
+
+      //=>初次加载页面执行函数，动态设置HTML的font-size
+      window.addEventListener('pageshow', setREM)
+      //=>性能优化，宽度改变后200毫秒之后再改变
+      let timer;
+      //=>宽度改变后执行函数，动态设置HTML的font-size
+      window.addEventListener('resize', () => {
+        //=>性能优化，宽度改变后200毫秒之后再改变
+        timer && clearInterval(timer);
+        timer = setTimeout(function () {
+          setREM()
+          console.log(2)
+        }, 200)
+      })
+    })()
+  </script>
+  <style>
+    .container {
+      width: 3rem;
+      height: 3rem;
+      font-size: 0.3rem;
+      font-weight: bold;
+      color: #e87a7a;
+      transition: animation 2s;
+      animation: co 5s linear infinite both;
+    }
+
+    @keyframes co {
+      0% {
+        color: #e87a7a;
+      }
+      30% {
+        color: green;
+      }
+      60% {
+        color: blue
+      }
+      100% {
+        color: #e87a7a
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  该元素的设计稿宽高为300px，
+  css样式中使用rem单位，并且将300px除以100
+</div>
+</body>
+</html>
