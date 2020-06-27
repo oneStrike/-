@@ -9,8 +9,11 @@
         <li v-for="item in song" :key="item.id">
           <figure>
             <!--          lazyload实现图片懒加载-->
-            <img v-lazy="item.picUrl" :alt="item.copywriter"
-                 @click="playCurrentSong({cover:item.picUrl,id:item.id,name:item.name,singer:item.song.artists[0].name,time:item.song.bMusic.playTime})"/>
+            <img
+                    v-lazy="item.picUrl"
+                    :alt="item.copywriter"
+                    @click="playCurrentSong({cover:item.picUrl,id:item.id,name:item.name,singer:item.song.artists[0].name,time:item.song.bMusic.playTime,singerID:item.song.artists[0].id})"
+            />
             <figcaption>{{item.name}}</figcaption>
             <span>{{item.song.artists[0].name}}</span>
           </figure>
@@ -34,9 +37,9 @@
       </ul>
     </div>
     <!--    电台列表-->
-    <div v-if="djprogram" class="wrapper-djprogram">
+    <div v-if="radio" class="wrapper-radio">
       <ul class="content">
-        <li v-for="item in djprogram" :key="item.id">
+        <li v-for="item in radio" :key="item.id">
           <figure>
             <!--          lazyload实现图片懒加载-->
             <img v-lazy="item.picUrl" :alt="item.copywriter"/>
@@ -49,18 +52,12 @@
 </template>
 
 <script>
-  import BScroll from 'better-scroll';
-  import {utils} from '@/utils/utils';
-  import {mapState} from "vuex"
+  import BScroll from "better-scroll";
+  import {utils} from "@/utils/utils";
+  import {mapState} from "vuex";
 
   export default {
     name: "RecommendList",
-    data() {
-      return {
-        songID: null,
-        repetitionSong: [],
-      }
-    },
     props: {
       song: {
         type: Array
@@ -68,81 +65,91 @@
       songList: {
         type: Array
       },
-      djprogram: {
-        type: Array,
+      radio: {
+        type: Array
       },
       title: {
         type: String,
         required: true
-      },
+      }
     },
     computed: {
       ...mapState({
-        isPlay: state => state.playPage.isPlay
+        isPlay: state => state.playPage.isPlay,
+        playData: state => state.playPage.playData
       })
     },
     methods: {
       initScroll(container) {
         new BScroll(container, {
           scrollX: true,
-          eventPassthrough: 'vertical'
-        })
+          eventPassthrough: "vertical"
+        });
       },
-      //如果请求较慢时，点击时则无法获取数据，没有数据时不做任何处理
       playCurrentSong(songInfo) {
-        if (!songInfo) return
-        this.$store.commit('getPlayData', songInfo);
-        this.$store.commit('playShow', true);
-        this.$store.dispatch('getSongURL', songInfo.id);
-        //=>如果没有此项判断，会无视播放状态直接开启定时器和封面旋转，
-        if (!this.songID) {
-          //=>按需加载播放页面，this.songID为空说明时第一次进入播放页面
-          this.$store.commit('dynamic', 'playPage');
-          this.songID = songInfo.id;
-          this.repetitionSong.push(songInfo.id);
-          this.$store.commit('setLatelyList', songInfo)
+        if (!this.playData.id) {
+          //=>按需加载播放页面，this.playData.id为空说明时第一次进入播放页面
+          this.$store.commit("setPlayStatus", {
+            data: songInfo,
+            showPlayPage: true,
+            play: true,
+            effect: true,
+            dynamic: "playPage",
+            latelySongID: songInfo.id,
+            lately: songInfo,
+          });
+          this.$store.dispatch("getSongURL", this.playData.id);
+          this.$store.dispatch("getLyric", this.playData.id);
           return;
         }
-        if (this.songID === songInfo.id && this.isPlay) {
-          //=>this.songID === songInfo.id说明点击的都是同一首歌曲，只有当这首歌是播放状态才开始旋转和定时器
-          this.$store.commit('setRotateAndTimer', true);
-          this.songID = songInfo.id;
-          return
-        }
-        if (this.songID !== songInfo.id) {
-          this.$store.commit('setRotateAndTimer', true);
-          this.songID = songInfo.id;
-          if (this.repetitionSong.indexOf(songInfo.id) === -1) {
-            this.repetitionSong.push(songInfo.id);
-            this.$store.commit('setLatelyList', songInfo)
+        if (this.playData.id === songInfo.id) {
+          //=>this.playData.id === songInfo.id说明点击的都是同一首歌曲，只有当这首歌是播放状态才开始旋转和定时器
+          if (this.isPlay) {
+            this.$store.commit("setPlayStatus", {
+              showPlayPage: true,
+              effect: true
+            });
           }
+          this.$store.commit("setPlayStatus", {
+            showPlayPage: true,
+            effect: false
+          });
+          return;
+        }
+        if (this.playData.id !== songInfo.id) {
+          this.$store.commit("setPlayStatus", {
+            showPlayPage: true,
+            data: songInfo,
+            play: true,
+            effect: true
+          });
+          this.$store.dispatch("getSongURL", this.playData.id);
         }
       }
     },
     filters: {
       //=>格式化歌单的播放次数
       rePlayCount(playCount) {
-        return utils.reNum(playCount)
+        return utils.reNum(playCount);
       }
     },
     watch: {
-      //=>延迟初始化better-scroll，以保证功能的正常使用
       song() {
         this.$nextTick(() => {
-          this.initScroll('.wrapper-song')
-        })
+          this.initScroll(".wrapper-song");
+        });
       },
       songList() {
         this.$nextTick(() => {
-          this.initScroll('.wrapper-songList')
-        })
+          this.initScroll(".wrapper-songList");
+        });
       },
-      djprogram() {
+      radio() {
         this.$nextTick(() => {
-          this.initScroll('.wrapper-djprogram')
-        })
+          this.initScroll(".wrapper-radio");
+        });
       }
-    },
+    }
   };
 </script>
 

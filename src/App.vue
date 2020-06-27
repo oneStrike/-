@@ -27,19 +27,19 @@
       <router-view></router-view>
     </keep-alive>
     <!--    播放页面 -->
-    <transition name="play">
-      <div class="show-palypage" v-show="playShow">
+      <div class="show-palypage" v-show="showPlayPage">
         <keep-alive>
           <!--初始加载首页时并不加载播放页面， 按需加载-->
           <component :is="dynamicLoading"></component>
         </keep-alive>
       </div>
-    </transition>
     <!--    //=>侧边栏的历史播放记录-->
     <transition name="lately">
       <LatelyPlayList @hide-lately-play="toggleLatelyPlay" v-show="showLatelyPlay"></LatelyPlayList>
     </transition>
-
+    <div class="mini-play">
+      <MiniPlay></MiniPlay>
+    </div>
   </div>
 </template>
 <script>
@@ -47,6 +47,7 @@
   import HeaderNav from "@common/headerNav/HeaderNav";
   import PlayPage from '@/views/playPage/PlayPage'
   import LatelyPlayList from '@common/LatelyPlayList/LatelyPlayList'
+  import MiniPlay from "@common/miniPlay/MiniPlay";
 
   export default {
     name: 'App',
@@ -57,7 +58,7 @@
     },
     computed: {
       ...mapState({
-        playShow: state => state.playPage.isShow,
+        showPlayPage: state => state.playPage.showPlayPage,
         dynamicLoading: state => state.playPage.dynamicLoading,
       })
     },
@@ -69,7 +70,8 @@
     components: {
       HeaderNav,
       PlayPage,
-      LatelyPlayList
+      LatelyPlayList,
+      MiniPlay
     },
   }
 </script>
@@ -79,11 +81,17 @@
   #container {
     width: 100%;
     height: 88px;
-    background: @themecolor;
     color: @fontcolor;
     position: relative;
 
     .header {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: @themecolor;
+      z-index: 100;
+
       .center {
         flex: 3;
       }
@@ -124,6 +132,13 @@
 
     .icon-sousuosearch82 {
       font-size: 26px;
+    }
+
+    .mini {
+      width: 100%;
+      height: 45px;
+      position: fixed;
+      bottom: 0;
     }
 
     .play-enter-active {

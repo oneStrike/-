@@ -12,52 +12,64 @@
         <RecommendList :playCount="true" title="推荐歌单" :songList="songList"></RecommendList>
       </div>
       <div class="classify">
-        <RecommendList title="推荐电台" :djprogram="djprogram"></RecommendList>
+        <RecommendList title="推荐电台" :radio="radio"></RecommendList>
       </div>
+      <!--    推荐内容简要-->
+      <TopListDetail :topListDetail="topListDetail"></TopListDetail>
     </section>
-    <!--    推荐内容简要-->
-    <TopListDetail :topListDetail="topListDetail"></TopListDetail>
   </div>
 </template>
-
 <script>
-  import {mapState} from "vuex";
+  import {getBannerData, getSongList, getSong, getTopListDetail, getRadio} from "../../api";
   import Banner from '@recommend/banner/Banner'
   import RecommendList from '@recommend/recommendList/RecommendList';
   import TopListDetail from "@recommend/topListDetail/TopListDetail";
 
   export default {
     name: "recommend",
-    computed: {
-      ...mapState({
-        banners: state => state.banners,
-        songList: state => state.songList,
-        song: state => state.song,
-        djprogram: state => state.djprogram,
-        topListDetail: state => state.topListDetail,
-      })
+    data() {
+      return {
+        banners: [],
+        song: [],
+        songList: [],
+        radio: [],
+        topListDetail: [],
+      }
     },
-    mounted() {
-      this.$store.dispatch('getbanner')
-      this.$store.dispatch("getSongListContent");
-      this.$store.dispatch('getSong')
-      this.$store.dispatch('getDjprogram')
-      this.$store.dispatch('getTopListDetail')
+    async mounted() {
+      try {
+        this.banners = (await getBannerData()).banners;
+        this.song = (await getSong()).result;
+        this.songList = (await getSongList()).result;
+        this.radio = (await getRadio()).result;
+        this.topListDetail = (await getTopListDetail()).list.splice(0, 4)
+      } catch (e) {
+        alert(e)
+      }
     },
     components: {
       RecommendList,
       TopListDetail,
       Banner
     }
-  }
-  ;
+  };
 </script>
 
 <style scoped lang="less">
   @import "@less/mixins";
 
   #recommend {
-    position: relative;
+    position: absolute;
+    width: 100%;
+    background: #f2f3f4;
+    top: 88px;
+
+    .banner-container {
+      width: 100%;
+      height: 100%;
+      background: @themecolor;
+      position: relative;
+    }
 
     /*  推荐列表*/
 

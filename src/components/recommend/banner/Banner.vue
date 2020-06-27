@@ -2,9 +2,9 @@
   <div class="banner">
     <aside class="swiper-container" v-show="!isShow">
       <ul class="swiper-wrapper">
-        <li class="swiper-slide" v-for="item in banners" :key="item.bannerId">
+        <li class="swiper-slide" v-for="(item,index) in banners" :key="index">
           <a href="">
-            <img class="img-content" :src="item.pic" alt/>
+            <img class="img-content" :src="item.imageUrl" :alt="item.typeTitle"/>
           </a>
         </li>
       </ul>
@@ -37,7 +37,6 @@
         isShow: state => state.playPage.isShow
       })
     },
-
     watch: {
       // 获取数据之后再初始化swiper
       banners() {
@@ -72,20 +71,16 @@
   @import "@less/mixins";
 
   .banner {
-    width: 100%;
-    height: 135px;
-    background-color: @themecolor;
-    z-index: -1;
+    width: 90%;
+    border-radius: 10px;
+    position: relative;
+    margin: 0 auto;
+    top: 5px;
+    overflow: hidden;
 
-    .swiper-container {
-      width: 360px;
-      height: 140px;
-      border-radius: 8px;
-
-      /deep/ .swiper-pagination {
-        span {
-          background: @themecolor;
-        }
+    /deep/ .swiper-pagination {
+      span {
+        background: @themecolor
       }
     }
   }

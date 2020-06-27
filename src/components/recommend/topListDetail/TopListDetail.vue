@@ -1,5 +1,5 @@
 <template>
-  <section class="detail-content clearboth">
+  <section class="detail-content">
     <h3>热歌风向标</h3>
     <div class="wrapper">
       <div class="content">
@@ -22,6 +22,7 @@
         </div>
       </div>
     </div>
+    <div v-if="$store.state.playPage.playData.id" class="empty"></div>
   </section>
 </template>
 
@@ -53,10 +54,10 @@
   @import "@less/mixins";
 
   .detail-content {
+    width: 100%;
     height: 100%;
     color: #666666;
     position: relative;
-    margin-left: 10px;
 
     h3 {
       font-size: 16px;
@@ -70,7 +71,6 @@
       width: 100%;
       height: 198px;
       overflow: hidden;
-      position: absolute;
 
       .content {
         height: 100%;
@@ -95,7 +95,7 @@
         }
 
         .detail-list {
-          width: 240px;
+          width: 280px;
           height: 180px;
           margin: 1px;
           display: flex;
@@ -114,7 +114,7 @@
               height: 100%;
               position: absolute;
               top: 0;
-              width: 170px;
+              width: 210px;
               left: 55px;
               padding-top: 10px;
 
@@ -129,9 +129,13 @@
               }
 
               h5 {
+                width: 150px;
                 display: inline-block;
                 font-size: 14px;
                 font-weight: bold;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
               }
 
               .detail-second {
@@ -151,6 +155,7 @@
                 color: @themecolor;
                 text-align: center;
                 line-height: 25px;
+                vertical-align: middle;
 
                 .iconfont {
                   font-size: 24px;
@@ -160,6 +165,11 @@
           }
         }
       }
+    }
+
+    .empty {
+      width: 100%;
+      height: 60px;
     }
   }
 </style>

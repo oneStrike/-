@@ -10,8 +10,16 @@
       <h2>{{playData.name}}</h2>
       <h3>{{playData.singer}}</h3>
     </header>
-    <section class="cover">
+    <section @click="adjustLyric" v-show="!showLyric" class="cover">
       <CoverRotate :coverURL="playData.cover"></CoverRotate>
+    </section>
+    <section ref="lyricContainer" :class="{'lyric-big':showLyric,'lyric-small':!showLyric}">
+      <Lyric
+              :activeLine="activeLine"
+              :lyric="showLyric"
+              @hide-lyric="hideLyric"
+              :lyricContent="lyricContent"
+      ></Lyric>
     </section>
     <footer class="control">
       <playSong :playURL="playURL"></playSong>
@@ -19,42 +27,61 @@
   </div>
 </template>
 <script>
-  import {mapState} from 'vuex';
-  import CoverRotate from '@playpage/coverRotate/CoverRotate';
-  import PlaySong from '@playpage/playSong/PlaySong';
+  import {mapState} from "vuex";
+  import CoverRotate from "@playpage/coverRotate/CoverRotate";
+  import PlaySong from "@playpage/playSong/PlaySong";
+  import Lyric from "@playpage/lyric/Lyric";
 
   export default {
     name: "PlayPage",
+    data() {
+      return {
+        showLyric: false,
+        lyricContent: "",
+        activeLine: 2
+      };
+    },
     computed: {
       ...mapState({
         playData: state => state.playPage.playData,
         playURL: state => state.playPage.playURL,
-        timer: state => state.playPage.timer,
+        latelySongID: state => state.playPage.latelySongID,
       })
     },
     methods: {
       hide() {
-        this.$store.commit('playShow', false)
-        //=>无视播放状态，只要隐藏播放页面就清除定时器和停止封面旋转
-        this.$store.commit('setRotateAndTimer', false)
+        this.$store.commit("setPlayStatus", {showPlayPage: false});
+      },
+      adjustLyric() {
+        this.showLyric = true;
+        this.activeLine = 6;
+      },
+      hideLyric() {
+        this.showLyric = false;
+        this.activeLine = 2;
       }
     },
-    mounted() {
-      //=>在当前页面刷新浏览器，会清空vuex的数据，没有数据时则将播放页面隐藏
-      if (!(this.playData.name)) {
-        this.$store.commit('playShow', false)
-        return;
+    watch: {
+      //=>playData存储的始终是最新播放的歌曲，
+      playData: {
+        handler: function (value) {
+          this.$store.dispatch("getSongURL", value.id);
+          this.$store.dispatch("getLyric", value.id);
+          if (this.latelySongID.length === 0 || this.latelySongID.indexOf(value.id) === -1) {
+            this.$store.commit('setPlayStatus', {
+              latelySongID: value.id,
+              lately: value,
+            })
+          }
+        },
       }
-      //=>正常点击进入的播放页面
-      this.$store.commit('playShow', true)
-      this.$store.commit('setIsPlay', true)
-      this.$store.commit('setRotateAndTimer', true)
     },
     components: {
       CoverRotate,
       PlaySong,
+      Lyric
     }
-  }
+  };
 </script>
 
 <style scoped lang="less">
@@ -127,9 +154,24 @@
       transform: translate(-50%, -70%);
     }
 
+    .lyric-big {
+      margin-top: 20px;
+      width: 100%;
+      height: 450px;
+      overflow: hidden;
+    }
+
+    .lyric-small {
+      width: 100%;
+      height: 80px;
+      overflow: hidden;
+      position: absolute;
+      top: 65%;
+    }
+
     .control {
       width: 100%;
-      height: 200px;
+      height: 140px;
       position: fixed;
       bottom: 0;
     }
