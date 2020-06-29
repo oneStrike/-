@@ -1,17 +1,16 @@
 <template>
-  <div @click="$emit('hide-lyric')" id="lyric-container">
-    <ul ref="lyricContent" class="lyric-content">
+  <Scroll eventPassthroug="''" :data="lyric" :scrollY="true">
+    <ul id="lyric-container" ref="lyricContent">
       <li class="lyric-child" ref="lyricDetail" :class="{'active':line-1===index}" v-for="(lyric,index) in reLyric"
           :key="index">
         <p :class="{hide:hide}">{{lyric}}</p>
       </li>
     </ul>
-  </div>
+  </Scroll>
 </template>
 
 <script>
-  import {mapState} from "vuex";
-  import BScroll from "better-scroll";
+  import Scroll from "../../common/scroll/Scroll";
 
   export default {
     name: "Lyric",
@@ -21,24 +20,23 @@
         line: 0,
         curTime: 0,
         hide: false,
-        scroll: null,
       };
     },
     props: {
+      lyric: {
+        type: String,
+      },
       activeLine: {
         type: [Number, String],
         default: 2
       }
     },
     computed: {
-      ...mapState({
-        lyric: state => state.playPage.lyric,
-        lyricLine: state => state.playPage.lyricLine
-      }),
       //=>解析歌词
       reLyric() {
         if (this.lyric) {
-          this.lyric.replace(/(\[.*?]\s)(?=\[)/g, "").replace(/\[.*?]/g, time => {
+          //=>TODO 经过测试有些歌接口返回的歌词不完整，目前发现 “停不下来”
+          this.lyric.replace(/(\[.*?]\s*)(?=\[)/g, "").replace(/\[.*?]/g, time => {
             time = time.split(/\D/);
             time = time.splice(1, 3);
             time = parseInt(time[0]) * 60 + parseInt(time[1]) + "." + time[2];
@@ -88,10 +86,9 @@
             return;
           }
         }
-        //=>如果跳转的时间点没有歌词则直接跳转至最后一行
+        //=>如果跳转的时间点后续没有歌词直接跳转至最后一行
         this.line = this.$refs.lyricDetail.length;
         this.$refs.lyricContent.style.transform = this.scrollH(this.lyricTime.length - 1);
-        console.log(this.line)
       },
       //=>又臭又长的
       scrollH(line) {
@@ -119,17 +116,12 @@
       },
       lyric: {
         handler: function () {
-          //=>歌词改变时清空时间数组
           this.lyricTime = [];
-          if (this.scroll) {
-            this.scroll.refresh();
-            return;
-          }
-          this.scroll = new BScroll('#lyric-container', {
-            click: true,
-          })
         }
       }
+    },
+    components: {
+      Scroll,
     }
   };
 </script>
@@ -139,21 +131,19 @@
 
   #lyric-container {
     width: 100%;
-    height: 100%;
-    overflow: hidden;
     text-align: center;
+    transition: transform 200ms linear;
+    position: absolute;
+    overflow: hidden;
 
-    .lyric-content {
-      transition: all 200ms linear;
+    .lyric-child {
+      padding: 6px 0;
 
-      .lyric-child {
-        padding: 6px 0;
+      .hide {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
-        .hide {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
       }
     }
 

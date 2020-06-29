@@ -4,22 +4,17 @@
       <div class="bg"></div>
     </div>
     <header class="title">
-      <div @click="hide" class="hide-btn">
+      <div @click="$store.commit('setPlayStatus',{showPlayPage:false})" class="hide-btn">
         <i class="iconfont icon-jiantou-copy-copy"></i>
       </div>
       <h2>{{playData.name}}</h2>
       <h3>{{playData.singer}}</h3>
     </header>
-    <section @click="adjustLyric" v-show="!showLyric" class="cover">
+    <section v-show="!showLyric" class="cover">
       <CoverRotate :coverURL="playData.cover"></CoverRotate>
     </section>
-    <section ref="lyricContainer" :class="{'lyric-big':showLyric,'lyric-small':!showLyric}">
-      <Lyric
-              :activeLine="activeLine"
-              :lyric="showLyric"
-              @hide-lyric="hideLyric"
-              :lyricContent="lyricContent"
-      ></Lyric>
+    <section @click="toggleLyric" ref="lyricContainer" :class="{'lyric-big':showLyric,'lyric-small':!showLyric}">
+      <Lyric :lyric="lyric" :activeLine="activeLine"></Lyric>
     </section>
     <footer class="control">
       <playSong :playURL="playURL"></playSong>
@@ -28,6 +23,7 @@
 </template>
 <script>
   import {mapState} from "vuex";
+  import {getLyric} from "../../api";
   import CoverRotate from "@playpage/coverRotate/CoverRotate";
   import PlaySong from "@playpage/playSong/PlaySong";
   import Lyric from "@playpage/lyric/Lyric";
@@ -36,8 +32,8 @@
     name: "PlayPage",
     data() {
       return {
+        lyric: '',
         showLyric: false,
-        lyricContent: "",
         activeLine: 2
       };
     },
@@ -49,24 +45,34 @@
       })
     },
     methods: {
-      hide() {
-        this.$store.commit("setPlayStatus", {showPlayPage: false});
+      toggleLyric() {
+        if (this.activeLine === 2) {
+          this.showLyric = true;
+          this.activeLine = 6;
+        } else {
+          this.showLyric = false;
+          this.activeLine = 2;
+        }
       },
-      adjustLyric() {
-        this.showLyric = true;
-        this.activeLine = 6;
-      },
-      hideLyric() {
-        this.showLyric = false;
-        this.activeLine = 2;
+      async getLyric() {
+        try {
+          this.lyric = (await getLyric(this.playData.id)).lrc.lyric;
+        } catch (e) {
+          this.lyric = '暂时没有歌词';
+        }
       }
+    },
+    mounted() {
+      this.$store.dispatch('getSongURL', this.playData.id);
+      this.getLyric()
     },
     watch: {
       //=>playData存储的始终是最新播放的歌曲，
       playData: {
         handler: function (value) {
+          console.log(value)
           this.$store.dispatch("getSongURL", value.id);
-          this.$store.dispatch("getLyric", value.id);
+          this.getLyric()
           if (this.latelySongID.length === 0 || this.latelySongID.indexOf(value.id) === -1) {
             this.$store.commit('setPlayStatus', {
               latelySongID: value.id,
@@ -74,6 +80,7 @@
             })
           }
         },
+        deep: true,
       }
     },
     components: {

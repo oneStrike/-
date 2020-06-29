@@ -1,6 +1,5 @@
 import {
   getSongURL,
-  getLyric
 } from '../../api/index'
 
 const playPage = {
@@ -13,8 +12,6 @@ const playPage = {
     rotateAndTimer: false, //=>封面和定时器的开启条件
     latelyList: [], //=>存储历史播放的记录
     latelySongID: [],//历史歌曲的id，
-    lyric: '', //歌词
-    lyricLine: 0, //=>高亮歌词的条件
   }),
   getters: {},
   mutations: {
@@ -26,7 +23,6 @@ const playPage = {
       typeof statusObj.effect !== 'undefined' ? state.rotateAndTimer = statusObj.effect : state.rotateAndTimer;
       typeof statusObj.lately !== 'undefined' ? state.latelyList.push(statusObj.lately) : state.latelyList;
       typeof statusObj.URL !== 'undefined' ? state.playURL = statusObj.URL : state.playURL;
-      typeof statusObj.lyric !== 'undefined' ? state.lyric = statusObj.lyric : state.lyric;
       typeof statusObj.latelySongID !== 'undefined' ? state.latelySongID.push(statusObj.latelySongID) : state.latelySongID;
     },
   },
@@ -36,19 +32,10 @@ const playPage = {
         let url = await getSongURL(id);
         if (!url.data[0].url) {
           alert('当前歌曲需要VIP');
+          return;
         }
         commit("setPlayStatus", {
           URL: url.data[0].url
-        })
-      } catch (e) {
-        alert(e)
-      }
-    },
-    async getLyric({commit}, id) {
-      try {
-        let ly = await getLyric(id);
-        commit("setPlayStatus", {
-          lyric: ly.lrc.lyric
         })
       } catch (e) {
         alert(e)

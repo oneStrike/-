@@ -3,102 +3,55 @@
     <div class="title">
       <i class="iconfont icon-bofang"></i>
       <span>播放全部</span>
-      <span class="count">（共{{(lately||singerHitSongs||cloud).length}}首）</span>
+      <span class="count">（共{{(lately||cloud).length}}首）</span>
     </div>
-    <div class="wrapper lately-wrapper" v-if="name==='lately'&&lately">
-      <List :listContent="lately"></List>
+    <div ref="lately" class="list-wrapper" v-if="name==='lately'&&lately">
+      <Scroll :scrollY="true" :data="lately">
+        <List @trigger-click="playSong" :listContent="lately"></List>
+      </Scroll>
     </div>
-    <div class="wrapper mini-wrapper clearboth" v-if="name==='mini'&&singerHitSongs">
-      <List :listContent="singerHitSongs"></List>
-    </div>
-    <div class="wrapper cloud-wrapper" v-if="name==='cloud'&&cloud">
-      <List :listContent="cloud"></List>
+    <div ref="cloud" class="list-wrapper" v-if="name==='cloud'&&cloud">
+      <Scroll :scrollY="true" :data="cloud">
+        <List @trigger-click="playSong" :listContent="cloud"></List>
+      </Scroll>
     </div>
   </div>
 </template>
 
 <script>
   import List from "./list/List";
-  import BScroll from 'better-scroll'
+  import Scroll from "../scroll/Scroll";
 
   export default {
     name: "PlayList",
-    data() {
-      return {
-        latelyScroll: null,
-        miniScroll: null,
-        cloudScroll: null,
-      }
-    },
     props: {
       lately: {
         type: Array,
-        required: false,
-      },
-      singerHitSongs: {
-        type: Array,
-        required: false,
+        default: () => {
+          return [];
+        }
       },
       cloud: {
         type: Array,
-        required: false,
+        default: () => [],
       },
       name: {
         type: String,
         required: true,
       }
     },
-    watch: {
-      lately() {
-        this.$nextTick(() => {
-          if (this.latelyScroll) {
-            this.latelyScroll.refresh();
-            return;
-          }
-          this.latelyScroll = new BScroll('.lately-wrapper', {
-            click: true,
-            tap: true,
-            scrollY: true,
-          })
-        })
-      },
-
-
-      singerHitSongs(value) {
-        this.$nextTick(() => {
-          setTimeout(() => {
-            if (Object.keys(value) == 0) return;
-            console.log(value)
-            if (this.miniScroll) {
-              this.miniScroll.refresh();
-              console.log('重新计算高度')
-              return;
-            }
-            this.miniScroll = new BScroll('.mini-wrapper', {
-              click: true,
-              tap: true,
-              scrollY: true,
-            })
-            console.log('初始化')
-          })
-        })
-      },
-
-
-      cloud() {
-        this.$nextTick(() => {
-          if (this.cloudScroll) {
-            this.cloudScroll.refresh();
-            return;
-          }
-          this.cloudScroll = new BScroll('.cloud-wrapper', {
-            click: true,
-          })
-        })
+    methods: {
+      playSong(song) {
+        this.$store.commit("setPlayStatus", {
+          data: song,
+          play: true,
+          effect: true,
+        });
       }
     },
     components: {
       List,
+      Scroll
     }
   };
 </script>
@@ -108,6 +61,7 @@
 
   .list-container {
     width: 100%;
+    height: 100%;
     font-size: 16px;
 
     .title {
@@ -129,16 +83,13 @@
       }
     }
 
-    .wrapper {
+    .list-wrapper {
       width: 100%;
+      height: 94%;
       overflow: hidden;
       position: relative;
       top: 0;
       left: 0;
-    }
-
-    .mini-wrapper {
-      height: 340px;
     }
   }
 </style>

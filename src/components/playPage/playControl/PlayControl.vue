@@ -71,11 +71,13 @@
               console.log('随机播放第' + i + '首歌')
             }
             //=>判断当前播放的歌曲时播放列表的最后一位或者时第一位，实现列表循环
-            upOrDown ? (i === this.latelyList.length - 1 ? (i = -1) : null) : (i === 0 ? (i = this.latelyList.length) : null);
+            upOrDown ?
+              (i === this.latelyList.length - 1 ? (i = -1) : null) :
+              (i === 0 ? (i = this.latelyList.length) : null);
             this.$store.commit("setPlayStatus", {
               play: true,
               effect: true,
-              data: upOrDown ? this.latelyList[i + 1] : this.latelyList[i - 1]
+              data: upOrDown ? this.latelyList[++i] : this.latelyList[--i]
             });
             return;
           }
@@ -120,7 +122,7 @@
               this.playTag.play();
               return;
             }
-            this.toggleSong();
+            this.toggleSong(true);
           });
         });
       }

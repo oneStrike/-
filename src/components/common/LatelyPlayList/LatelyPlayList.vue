@@ -4,7 +4,7 @@
     <div ref="title" class="lately-content">
       <header class="title">
         <HeaderNav>
-          <!--        //=>使用自定义事件通知父组件，隐藏历史播放页面-->
+          <!-- 点击空白处隐藏-->
           <div class="left" @click="$emit('hide-lately-play')">
             <i class="iconfont icon-fanhui"></i>
           </div>
@@ -113,6 +113,8 @@
     }
 
     .lately-list {
+      width: 100%;
+      height: 95%;
       color: #323030;
     }
   }

@@ -4,73 +4,50 @@
       <h3>{{title}}</h3>
     </div>
     <!--    歌曲列表-->
-    <div v-if="song" class="wrapper-song">
-      <ul class="content">
-        <li v-for="item in song" :key="item.id">
-          <figure>
-            <!--          lazyload实现图片懒加载-->
-            <img
-                    v-lazy="item.picUrl"
-                    :alt="item.copywriter"
-                    @click="playCurrentSong({cover:item.picUrl,id:item.id,name:item.name,singer:item.song.artists[0].name,time:item.song.bMusic.playTime,singerID:item.song.artists[0].id})"
-            />
-            <figcaption>{{item.name}}</figcaption>
-            <span>{{item.song.artists[0].name}}</span>
-          </figure>
-        </li>
-      </ul>
-    </div>
-    <!--    歌单列表-->
-    <div v-if="songList" class="wrapper-songList">
-      <ul class="content">
-        <li v-for="item in songList" :key="item.id">
-          <figure>
-            <div class="play-count">
-              <i class="iconfont icon-erji"></i>
-              <span>{{item.playCount|rePlayCount}}</span>
-            </div>
-            <!--          lazyload实现图片懒加载-->
-            <img v-lazy="item.picUrl" :alt="item.copywriter"/>
-            <figcaption>{{item.name}}</figcaption>
-          </figure>
-        </li>
-      </ul>
-    </div>
-    <!--    电台列表-->
-    <div v-if="radio" class="wrapper-radio">
-      <ul class="content">
-        <li v-for="item in radio" :key="item.id">
-          <figure>
-            <!--          lazyload实现图片懒加载-->
-            <img v-lazy="item.picUrl" :alt="item.copywriter"/>
-            <figcaption>{{item.name}}</figcaption>
-          </figure>
-        </li>
-      </ul>
+    <div class="wrapper-song">
+      <Scroll eventPassthrough="vertical" :data="listData" :bounce="true" :scrollX="true">
+        <ul class="content">
+          <li v-for="s in listData" :key="s.id" @click.stop="playCurrentSong(s)">
+            <figure>
+              <!--          lazyload实现图片懒加载-->
+              <img v-lazy="s.picUrl" :key="s.picUrl" :alt="s.copywriter"/>
+              <div v-if="count" class="play-count">
+                <i class="iconfont icon-erji"></i>
+                <span>{{s.playCount|rePlayCount}}</span>
+              </div>
+              <figcaption>{{s.name}}</figcaption>
+              <span v-if="singer">{{s.song.artists[0].name||''}}</span>
+            </figure>
+          </li>
+        </ul>
+      </Scroll>
     </div>
   </div>
 </template>
 
 <script>
-  import BScroll from "better-scroll";
+  import Scroll from "../../common/scroll/Scroll";
   import {utils} from "@/utils/utils";
   import {mapState} from "vuex";
 
   export default {
     name: "RecommendList",
     props: {
-      song: {
-        type: Array
+      listData: {
+        type: Array,
+        default: () => [],
       },
-      songList: {
-        type: Array
-      },
-      radio: {
-        type: Array
+      singer: {
+        type: Boolean,
+        default: false,
       },
       title: {
         type: String,
         required: true
+      },
+      count: {
+        type: Boolean,
+        default: false,
       }
     },
     computed: {
@@ -80,50 +57,51 @@
       })
     },
     methods: {
-      initScroll(container) {
-        new BScroll(container, {
-          scrollX: true,
-          eventPassthrough: "vertical"
-        });
+      //=>提取歌曲所需的数据
+      getSongInfo(song) {
+        return {
+          name: song.name,
+          id: song.id,
+          time: song.song.duration,
+          singer: song.song.artists[0].name,
+          singerID: song.song.artists[0].id,
+          cover: song.picUrl,
+        }
       },
-      playCurrentSong(songInfo) {
+      playCurrentSong(s) {
+        //=>点击的歌单
+        if (s.playCount) {
+          this.$router.push({
+            path: `/recommend/songList/${s.id}`,
+          })
+          return;
+        }
+        //=>点击的歌曲
         if (!this.playData.id) {
-          //=>按需加载播放页面，this.playData.id为空说明时第一次进入播放页面
+          let temp = this.getSongInfo(s)
           this.$store.commit("setPlayStatus", {
-            data: songInfo,
+            data: temp,
             showPlayPage: true,
             play: true,
             effect: true,
             dynamic: "playPage",
-            latelySongID: songInfo.id,
-            lately: songInfo,
+            latelySongID: temp.id,
+            lately: temp,
           });
-          this.$store.dispatch("getSongURL", this.playData.id);
-          this.$store.dispatch("getLyric", this.playData.id);
-          return;
-        }
-        if (this.playData.id === songInfo.id) {
-          //=>this.playData.id === songInfo.id说明点击的都是同一首歌曲，只有当这首歌是播放状态才开始旋转和定时器
-          if (this.isPlay) {
-            this.$store.commit("setPlayStatus", {
-              showPlayPage: true,
-              effect: true
-            });
-          }
+          console.log('首次进入')
+        } else if (this.playData.id !== s.id) {
           this.$store.commit("setPlayStatus", {
+            data: this.getSongInfo(s),
             showPlayPage: true,
-            effect: false
-          });
-          return;
-        }
-        if (this.playData.id !== songInfo.id) {
-          this.$store.commit("setPlayStatus", {
-            showPlayPage: true,
-            data: songInfo,
             play: true,
             effect: true
           });
-          this.$store.dispatch("getSongURL", this.playData.id);
+          console.log("点击不同的歌曲")
+        } else {
+          this.$store.commit("setPlayStatus", {
+            showPlayPage: true,
+          });
+          console.log('点击相同的歌曲')
         }
       }
     },
@@ -133,22 +111,8 @@
         return utils.reNum(playCount);
       }
     },
-    watch: {
-      song() {
-        this.$nextTick(() => {
-          this.initScroll(".wrapper-song");
-        });
-      },
-      songList() {
-        this.$nextTick(() => {
-          this.initScroll(".wrapper-songList");
-        });
-      },
-      radio() {
-        this.$nextTick(() => {
-          this.initScroll(".wrapper-radio");
-        });
-      }
+    components: {
+      Scroll,
     }
   };
 </script>
@@ -174,6 +138,7 @@
         margin-left: 8px;
         flex-shrink: 0;
         text-align: center;
+        position: relative;
 
         figure {
           margin: 0;
@@ -189,10 +154,15 @@
           }
 
           .play-count {
-            position: absolute;
             color: @fontcolor;
-            right: 6px;
-            letter-spacing: 1px;
+            position: absolute;
+            top: 0;
+            right: 5px;
+
+            span {
+              display: inline-block;
+              margin: 0 5px;
+            }
 
             .iconfont {
               font-size: 14px;
@@ -214,7 +184,7 @@
       }
     }
 
-    .wrapper {
+    .wrapper-song {
       width: 100%;
       position: absolute;
       overflow: hidden;

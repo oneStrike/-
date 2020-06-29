@@ -1,14 +1,16 @@
 <template>
   <ul ref="slide" class="list-slide">
-    <li @click="playLately(song)"
-        v-for="(song,index) in listContent"
-        :key="song.id"
-        class="list-content"
-        :class="{'active-play':playData.id === song.id}">
+    <li @click="playLately(child)"
+        v-for="(child,index) in listContent"
+        :key="index"
+        class="list-content">
       <span class="count">{{index+1}}</span>
-      <div class="cantlet">
-        <span class="name">{{song.name}}</span>
-        <span class="singer">{{song.singer}}</span>
+      <div class="list-detail" :class="{'active-play':(child.id&&playData.id === child.id)}">
+        <span class="name">
+          {{child.name}}
+        <img class="icon" v-if="child.icon" :src="child.icon" alt=""></span>
+        <span class="singer">{{child.singer}}</span>
+        <span class="score" v-if="child.score">{{child.score}}</span>
       </div>
     </li>
   </ul>
@@ -22,23 +24,20 @@
     computed: {
       ...mapState({
         playData: state => state.playPage.playData,
+        isPlay: state => state.playPage.isPlay,
       })
     },
     props: {
       listContent: {
         type: Array,
-        required: true,
-      }
+        default: () => [],
+      },
     },
     methods: {
-      playLately(song) {
-        //=>如果当前的歌曲正在播放，并且点击的歌曲与当前播放的歌曲为同一首，则直接返回，不做处理
-        if (this.playData.id === song.id && this.isPlay) return;
-        this.$store.commit("setPlayStatus", {
-          data: song,
-          play: true
-        });
-      }
+      playLately(child) {
+        //=>分发一个事件，供搜索页面使用
+        this.$emit('trigger-click', child)
+      },
     },
   }
 </script>
@@ -65,40 +64,42 @@
         color: #323030;
       }
 
-      .cantlet {
+      .list-detail {
         width: 80%;
-        height: 40px;
+        height: 60px;
         text-align: left;
+        float: right;
+        color: #323030;
+        line-height: 60px;
         position: relative;
-        top: 50%;
-        transform: translate(0, -50%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
 
-        .name {
-          width: 150px;
-          font-size: 16px;
-          flex: 1;
-          overflow: hidden;
+        span {
+          display: block;
+          line-height: 30px;
           white-space: nowrap;
+          overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .singer {
-          font-size: 12px;
-          flex: 1;
-          color: #857979;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
+        .icon {
+          display: inline-block;
+          height: 13px;
+        }
+
+        .score {
+          float: right;
+          padding-right: 10px;
+          position: absolute;
+          top: 50%;
+          margin-top: -15px;
+          right: 10px;
         }
       }
     }
+  }
 
-    & .active-play {
-      color: @themecolor;
-    }
+  .active-play {
+    color: @themecolor !important;
   }
 
 </style>

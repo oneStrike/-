@@ -1,6 +1,6 @@
 <template>
   <div :class="{'rotate-start':rotateAndTimer}" class="cover-content" :style="{borderWidth:border}">
-    <img :src="coverURL" alt="">
+    <img class="coverImg" :src="coverURL" alt="">
   </div>
 </template>
 

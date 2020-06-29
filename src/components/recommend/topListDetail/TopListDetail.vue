@@ -1,33 +1,34 @@
 <template>
   <section class="detail-content">
-    <h3>热歌风向标</h3>
+    <h3>热歌风向标,没有找到对应的播放接口</h3>
     <div class="wrapper">
-      <div class="content">
-        <div v-for="item in topListDetail" :key="item.id">
-          <div class="toplist-name">
-            <h4>{{item.name}}</h4>
-            <span>查看更多</span>
+      <Scroll :data="topListDetail" :scrollX="true" :click="true">
+        <div class="content">
+          <div v-for="item in topListDetail" :key="item.id">
+            <div class="toplist-name">
+              <h4>{{item.name}}</h4>
+            </div>
+            <ul class="detail-list">
+              <li v-for="(content,index) in item.tracks" :key="index">
+                <img :src="item.coverImgUrl" alt="">
+                <div>
+                  <span class="detail-rank">{{index+1}}</span>
+                  <h5>{{content.first}}</h5>
+                  <span class="detail-second"> - {{content.second}}</span>
+                  <span @click="playSong(item.tracks)" class="play-btn"> <i class="iconfont icon-bofang"></i></span>
+                </div>
+              </li>
+            </ul>
           </div>
-          <ul class="detail-list">
-            <li v-for="(content,index) in item.tracks" :key="index">
-              <img :src="item.coverImgUrl" alt="">
-              <div>
-                <span class="detail-rank">{{index+1}}</span>
-                <h5>{{content.first}}</h5>
-                <span class="detail-second"> - {{content.second}}</span>
-                <span class="play-btn"> <i class="iconfont icon-bofang"></i></span>
-              </div>
-            </li>
-          </ul>
         </div>
-      </div>
+      </Scroll>
     </div>
     <div v-if="$store.state.playPage.playData.id" class="empty"></div>
   </section>
 </template>
 
 <script>
-  import BScroll from 'better-scroll'
+  import Scroll from "../../common/scroll/Scroll";
 
   export default {
     name: "topListDetail",
@@ -37,15 +38,13 @@
         required: true,
       }
     },
-    watch: {
-      topListDetail() {
-        this.$nextTick(() => {
-          new BScroll('.wrapper', {
-            scrollX: true,
-            eventPassthrough: 'vertical'
-          });
-        })
+    methods: {
+      playSong() {
+        console.log(this.topListDetail)
       }
+    },
+    components: {
+      Scroll,
     }
   }
 </script>

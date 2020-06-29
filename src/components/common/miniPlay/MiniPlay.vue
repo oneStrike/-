@@ -12,18 +12,21 @@
       <i v-show="!isPlay" class="iconfont icon-bofang"></i>
       <i v-show="isPlay" class="iconfont icon-zanting1"></i>
     </div>
-    <div class="list" @click.stop="showList=!showList">
+    <div class="list" @click.stop="isShow">
       <i class="iconfont icon-caidan1"></i>
     </div>
     <div @touchmove.prevent v-show="showList" class="play-list-container">
-      <PlayList name="mini" :singerHitSongs="singerHitSongs&&singerHitSongs"></PlayList>
+      <Scroll :data="singerHitSongs" :scrollY="true">
+        <List :listContent="singerHitSongs"></List>
+      </Scroll>
     </div>
   </div>
 </template>
 <script>
   import {mapState} from "vuex";
   import CoverRotate from "../../playPage/coverRotate/CoverRotate";
-  import PlayList from "@common/playList/PlayList";
+  import List from "../playList/list/List";
+  import Scroll from "../scroll/Scroll";
   import {getSingerHitSongs} from "../../../api";
 
   export default {
@@ -49,6 +52,10 @@
           play: !this.isPlay,
           effect: !this.isPlay,
         })
+      },
+      isShow() {
+        this.showList = !this.showList;
+        this.$bus.$emit('mini-list', this.showList)
       }
     },
     watch: {
@@ -84,7 +91,8 @@
     },
     components: {
       CoverRotate,
-      PlayList
+      List,
+      Scroll,
     }
   };
 </script>
@@ -140,11 +148,11 @@
 
     .play-list-container {
       width: 100%;
-      position: absolute;
-      bottom: 60px;
-      left: 0;
-      background: #f2f3f4;
+      height: 370px;
       overflow: hidden;
+      position: absolute;
+      left: 0;
+      bottom: 60px;
     }
   }
 </style>

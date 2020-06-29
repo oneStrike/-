@@ -12,33 +12,15 @@
       height: 100px;
       background: red;
     }
-
-    .box3 {
-      width: 100px;
-      height: 100px;
-      background: green;
-    }
   </style>
-
-</head>
 <body>
 <div class="box"></div>
-<button class="btn">按钮</button>
-<button class="btn2">按钮2</button>
-<div class="box2">
-  <div class="box3"></div>
-</div>
 <script>
-  let count = 100;
-  document.querySelector('.btn').onclick = function () {
-    document.querySelector('.box2').style.display = 'none';
+  let box = document.querySelector('.box');
+  box.addEventListener('click', function () {
     console.log(2)
-  }
-  document.querySelector('.btn2').onclick = function () {
-    setInterval(function () {
-      document.querySelector('.box3').style.transform = `translateY(${count += 100}px)`
-    }, 200)
-  }
+  })
+  box.dispatchEvent(new Event('click'));
 </script>
 </body>
 </html>

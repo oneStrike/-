@@ -9,9 +9,9 @@
           <div class="center">
             <h1 class="center">MyMusic</h1>
           </div>
-          <div class="right">
+          <router-link tag="div" to="/search" class="right">
             <i class="iconfont icon-sousuosearch82 right"></i>
-          </div>
+          </router-link>
         </template>
       </HeaderNav>
       <nav>
@@ -27,12 +27,12 @@
       <router-view></router-view>
     </keep-alive>
     <!--    播放页面 -->
-      <div class="show-palypage" v-show="showPlayPage">
-        <keep-alive>
-          <!--初始加载首页时并不加载播放页面， 按需加载-->
-          <component :is="dynamicLoading"></component>
-        </keep-alive>
-      </div>
+    <div class="show-palypage" v-show="showPlayPage">
+      <keep-alive>
+        <!--初始加载首页时并不加载播放页面， 按需加载-->
+        <component :is="dynamicLoading"></component>
+      </keep-alive>
+    </div>
     <!--    //=>侧边栏的历史播放记录-->
     <transition name="lately">
       <LatelyPlayList @hide-lately-play="toggleLatelyPlay" v-show="showLatelyPlay"></LatelyPlayList>
@@ -65,13 +65,13 @@
     methods: {
       toggleLatelyPlay() {
         this.showLatelyPlay = !this.showLatelyPlay
-      }
+      },
     },
     components: {
       HeaderNav,
       PlayPage,
       LatelyPlayList,
-      MiniPlay
+      MiniPlay,
     },
   }
 </script>
@@ -141,16 +141,8 @@
       bottom: 0;
     }
 
-    .play-enter-active {
-      animation: play-show 500ms linear
-    }
-
-    .play-leave-active {
-      animation: play-hide 500ms linear;
-    }
-
     .lately-enter-active {
-      transition: all 300ms linear;
+      transition: transform 300ms linear;
       transform: translate(-100%, 0);
       background: rgba(0, 0, 0, 0);
     }
@@ -160,28 +152,49 @@
     }
 
     .lately-leave-active {
-      transition: all 300ms linear;
+      transition: transform 300ms linear;
       transform: translate(-100%, 0);
       background: rgba(0, 0, 0, 0);
     }
   }
 
-  //展示播放页面的动画
-  @keyframes play-show {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  .search-enter-active {
+    transform: translateX(100%);
+    transition: transform 300ms linear;
   }
 
-  @keyframes play-hide {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+  .search-enter-to {
+    transform: translateX(0);
   }
+
+  .search-leave-active {
+    transform: translateX(100%);
+    transition: transform 300ms linear;
+  }
+
+  //展示播放页面的动画
+  /*.play-enter-active {*/
+  /*  animation: play-show 500ms linear*/
+  /*}*/
+
+  /*.play-leave-active {*/
+  /*  animation: play-hide 500ms linear;*/
+  /*}*/
+  /*@keyframes play-show {*/
+  /*  from {*/
+  /*    opacity: 0;*/
+  /*  }*/
+  /*  to {*/
+  /*    opacity: 1;*/
+  /*  }*/
+  /*}*/
+
+  /*@keyframes play-hide {*/
+  /*  from {*/
+  /*    opacity: 1;*/
+  /*  }*/
+  /*  to {*/
+  /*    opacity: 0;*/
+  /*  }*/
+  /*}*/
 </style>
