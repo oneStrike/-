@@ -1,22 +1,16 @@
 <template>
-  <div id="recommend">
+  <div id="home">
     <div class="banner-container">
       <Banner :banners="banners"></Banner>
     </div>
     <!--    推荐列表-->
-    <section class="recommend-content">
+    <section class="home-content">
       <div class="classify">
-        <RecommendList :singer="true" title="推荐歌曲" :listData="song"></RecommendList>
+        <HomeList :singer="true" title="推荐歌曲" :listData="song"></HomeList>
       </div>
       <div class="classify">
-        <RecommendList :count="true" :playCount="true" title="推荐歌单" :listData="songList"></RecommendList>
+        <HomeList :count="true" :playCount="true" title="推荐歌单" :listData="songList"></HomeList>
       </div>
-      <!--      没有找到对应的播放接口，使用推荐的视频替代-->
-      <!--      <div class="classify">-->
-      <!--        <RecommendList title="推荐电台" :listData="radio"></RecommendList>-->
-      <!--      </div>-->
-      <!--    推荐内容简要-->
-      <!--      <TopListDetail :topListDetail="topListDetail"></TopListDetail>-->
       <div id="mv-container">
         <nav class="mv-area">
           <h2>MV排行榜</h2>
@@ -32,27 +26,28 @@
             </li>
           </ul>
         </nav>
-        <TopMV @reload="refresh" :mvData="topMV"></TopMV>
+        <TopMV :mvData="topMV"></TopMV>
       </div>
     </section>
     <keep-alive>
-      <router-view v-if="reload"></router-view>
+      <router-view></router-view>
     </keep-alive>
   </div>
 </template>
 <script>
   import {
-    getBannerData, getSongList, getSong,
+    getBannerData,
+    getSongList,
+    getSong,
     getTopMV
-    // getTopListDetail, getRadio
   } from "../../api";
-  import Banner from '@recommend/banner/Banner'
-  import RecommendList from '@recommend/recommendList/RecommendList';
-  import TopMV from "../../components/recommend/topMV/TopMV";
-  // import TopListDetail from "@recommend/topListDetail/TopListDetail";
+
+  import Banner from "../../components/home/banner/Banner";
+  import HomeList from "../../components/home/homeList/HomeList";
+  import TopMV from "../../components/home/topMV/TopMV";
 
   export default {
-    name: "recommend",
+    name: "home",
     data() {
       return {
         banners: [],
@@ -60,32 +55,21 @@
         songList: [],
         topMV: [],
         area: '内地',
-        reload: true,
-        // radio: [],
-        // topListDetail: [],
       }
     },
     methods: {
-      refresh() {
-        this.reload = false;
-        this.$nextTick(() => {
-          this.reload = true;
-        })
-      },
       async getPageData() {
         try {
           this.banners = (await getBannerData()).banners;
           this.song = (await getSong()).result;
           this.songList = (await getSongList()).result;
           this.topMV = (await getTopMV(this.area)).data;
-          // this.radio = (await getRadio()).result;
-          // this.topListDetail = (await getTopListDetail()).list.splice(0, 4)
         } catch (e) {
           alert(e)
         }
-      }
+      },
     },
-    async mounted() {
+    mounted() {
       this.getPageData()
     },
     watch: {
@@ -96,8 +80,7 @@
       }
     },
     components: {
-      RecommendList,
-      // TopListDetail,
+      HomeList,
       Banner,
       TopMV
     }
@@ -107,27 +90,26 @@
 <style scoped lang="less">
   @import "@less/mixins";
 
-  #recommend {
-    position: absolute;
-    width: 100%;
+  #home {
     background: #f2f3f4;
-    top: 88px;
+    padding-top: 90px;
 
     .banner-container {
       width: 100%;
       height: 100%;
       background: @themecolor;
       position: relative;
+
     }
 
     /*  推荐列表*/
 
-    .recommend-content {
+    .home-content {
       display: flex;
       flex-direction: column;
 
       .classify {
-        height: 200px;
+        height: 200px !important;
         flex-shrink: 0;
       }
     }

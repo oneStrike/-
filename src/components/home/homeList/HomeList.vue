@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend-list">
+  <div class="home-list">
     <div class="title">
       <h3>{{title}}</h3>
     </div>
@@ -31,7 +31,12 @@
   import {mapState} from "vuex";
 
   export default {
-    name: "RecommendList",
+    name: "HomeList",
+    data() {
+      return {
+        timer: null,
+      }
+    },
     props: {
       listData: {
         type: Array,
@@ -53,7 +58,7 @@
     computed: {
       ...mapState({
         isPlay: state => state.playPage.isPlay,
-        playData: state => state.playPage.playData
+        playData: state => state.playPage.playData,
       })
     },
     methods: {
@@ -69,15 +74,18 @@
         }
       },
       playCurrentSong(s) {
-        //=>点击的歌单
+        //=>TODO 添加定时器是为了解决点击穿透，
         if (s.playCount) {
-          this.$router.push({
-            path: `/recommend/songList/${s.id}`,
+          this.timer && clearTimeout(this.timer);
+          this.timer = setTimeout(() => {
+            this.$router.push({
+              path: `/home/songList/${s.id}`,
+            })
           })
           return;
         }
         //=>点击的歌曲
-        if (!this.playData.id) {
+        if (typeof this.playData.id === 'undefined') {
           let temp = this.getSongInfo(s)
           this.$store.commit("setPlayStatus", {
             data: temp,
@@ -85,10 +93,7 @@
             play: true,
             effect: true,
             dynamic: "playPage",
-            latelySongID: temp.id,
-            lately: temp,
           });
-          console.log('首次进入')
         } else if (this.playData.id !== s.id) {
           this.$store.commit("setPlayStatus", {
             data: this.getSongInfo(s),
@@ -96,12 +101,10 @@
             play: true,
             effect: true
           });
-          console.log("点击不同的歌曲")
         } else {
           this.$store.commit("setPlayStatus", {
             showPlayPage: true,
           });
-          console.log('点击相同的歌曲')
         }
       }
     },
@@ -120,7 +123,7 @@
 <style scoped lang="less">
   @import "@less/mixins";
 
-  .recommend-list {
+  .home-list {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -131,7 +134,7 @@
       color: #666666;
       min-width: 100%;
       float: left;
-      height: 150px !important;
+      height: 150px;
 
       li {
         width: 100px;

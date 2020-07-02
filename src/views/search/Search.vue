@@ -9,7 +9,7 @@
         <input @click="suggestShow=true" class="input-content" v-model="searchContent"
                :placeholder="'大家都在搜：' +defaultSearch" type="text">
       </label>
-      <span class="singer">
+      <span class="singer" @click="$router.push({path:'/singer'})">
         <i class="iconfont icon-icon32"></i>
       </span>
     </header>
@@ -21,7 +21,8 @@
       </span>
       <Scroll :data="latelySearch" :scrollX="true" :click="true" :bounce="true">
         <ul class="lately-container">
-          <li v-for="(content,index) in latelySearch" :key="index" class="lately-content">
+          <li @click="showSearchResult(content)" v-for="(content,index) in latelySearch" :key="index"
+              class="lately-content">
             {{content}}
           </li>
         </ul>
@@ -29,9 +30,9 @@
     </section>
     <!--    搜索建议-->
     <section v-show="searchContent&&suggestShow" class="suggest">
-      <span @click="showSearchResult" class="user-input">搜索 "{{searchContent}}"</span>
+      <span @click="showSearchResult(searchContent)" class="user-input">搜索 "{{searchContent}}"</span>
       <ul class="suggest-content">
-        <li @click="showSearchResult" v-for="(suggest,index) in suggest.allMatch" :key="index">
+        <li @click="showSearchResult(suggest.keyword)" v-for="(suggest,index) in suggest.allMatch" :key="index">
           <i class="iconfont icon-sousuosearch82"></i>
           <span>{{suggest.keyword}}</span>
         </li>
@@ -40,12 +41,14 @@
     <!--    热门搜索-->
     <section @touchstart="suggestShow=false" class="top-search">
       <h2>热门搜索</h2>
-      <List @trigger-click="startSearch" :listContent="topSearch"></List>
+      <List :del="false" @trigger-click="showSearchResult" :listContent="topSearch"></List>
     </section>
     <!--    搜索结果展示-->
-    <keep-alive>
-      <router-view></router-view>
-    </keep-alive>
+    <div class="result" @touchstart="suggestShow=false">
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
+    </div>
   </div>
 </template>
 
@@ -55,8 +58,8 @@
     getDefaultSearchKeyWords,
     getTopSearchList
   } from "../../api";
-  import List from "@common/playList/list/List";
-  import Scroll from "@common/scroll/Scroll";
+  import List from "../../components/common/list/List";
+  import Scroll from "../../components/common/scroll/Scroll";
 
   export default {
     name: "Search",
@@ -64,7 +67,7 @@
       return {
         defaultSearch: '',
         searchContent: '',
-        latelySearch: [],
+        latelySearch: ['Reol'],
         suggest: [],
         topSearch: [],
         suggestShow: true,
@@ -75,11 +78,19 @@
         this.searchContent = '';
         this.$router.go(-1)
       },
-      showSearchResult() {
-        if (this.latelySearch.indexOf(this.searchContent) === -1) {
-          this.latelySearch.push(this.searchContent)
+      //=>展示搜索结果
+      showSearchResult(keyword) {
+        //=>keyword接收的可能是一个字符串或者是一个对象
+        keyword = keyword.name || keyword;
+        if (!keyword.trim()) return
+        if (this.latelySearch.indexOf(keyword) === -1) {
+          this.latelySearch.push(keyword);
         }
+        this.searchContent = keyword;
+        this.suggestShow = false;
+        this.$router.push({path: `/search/result/${keyword}`});
       },
+      //=>获取默认的搜索词
       async getDefault() {
         try {
           this.defaultSearch = (await getDefaultSearchKeyWords()).data.realkeyword;
@@ -87,13 +98,19 @@
           this.defaultSearch = ''
         }
       },
+      //=>获取搜索建议
       async getSuggest() {
+        if (!this.searchContent.trim()) {
+          this.suggest = [];
+          return;
+        }
         try {
           this.suggest = (await getSearchSuggest(this.searchContent)).result;
         } catch (e) {
           this.suggest = [];
         }
       },
+      //=>获取热搜
       async getTopSearch() {
         try {
           let temp = (await getTopSearchList()).data;
@@ -105,17 +122,22 @@
               score: item.score,
             })
           })
+          temp = null;
         } catch (e) {
           this.topSearch = [];
         }
       },
-      startSearch(keyword) {
-        this.$router.push({path: `/search/result/${keyword.name}`})
+      cacheSearch() {
+        let searchStr = this.latelySearch.join(',');
+        window.localStorage.setItem('search', searchStr);
       },
     },
     mounted() {
       this.getDefault();
       this.getTopSearch()
+      //=>在组件销毁前和创建时分别存储和读取localStorage
+      window.addEventListener('beforeunload', this.cacheSearch);
+      this.latelySearch = window.localStorage.getItem('search').split(',')
     },
     watch: {
       searchContent: {
@@ -231,6 +253,7 @@
       transform: translateX(-50%);
       box-shadow: 0 0 18px -2px #666;
       text-indent: 1em;
+      z-index: 20;
 
       .user-input {
         display: block;

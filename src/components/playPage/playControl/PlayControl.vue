@@ -1,6 +1,6 @@
 <template>
   <div class="play-control" @click="playControl">
-    <div class="play-mode">
+    <div class="play-mode" v-if="modeShow">
       <i v-show="mode===1" class="iconfont icon-shunxubofang"></i>
       <i v-show="mode===2" class="iconfont icon-danquxunhuan"></i>
       <i v-show="mode===3" class="iconfont icon-suiji"></i>
@@ -15,7 +15,7 @@
     <div class="next-song">
       <i class="iconfont icon-xiayiqu"></i>
     </div>
-    <div class="collect">
+    <div class="collect" v-if="collect">
       <i class="iconfont icon-aixin"></i>
     </div>
   </div>
@@ -32,30 +32,43 @@
         random: null,
         repeatRandom: null,
         audio: '',
+        songs: [],
       };
     },
     props: {
-      playTag: HTMLAudioElement
+      playTag: {
+        type: [HTMLAudioElement, String],
+      },
+      modeShow: {
+        type: Boolean,
+        default: true,
+      },
+      collect: {
+        type: Boolean,
+        default: true,
+      }
     },
     computed: {
       ...mapState({
         isPlay: state => state.playPage.isPlay,
         latelyList: state => state.playPage.latelyList,
+        playSongList: state => state.playPage.playSongList,
         playData: state => state.playPage.playData,
         playMode: state => state.playPage.playMode
       })
     },
     methods: {
       setRandom(num) {
-        this.random = Math.floor(Math.random() * this.latelyList.length);
+        this.random = Math.floor(Math.random() * this.songs.length);
         if (this.random === this.repeatRandom || this.random === num) {
           this.setRandom();
         }
         this.repeatRandom = this.random;
       },
       toggleSong(upOrDown) {
+        this.playMode ? this.songs = this.latelyList : this.songs = this.playSongList;
         //=>只有一首歌并且不是单曲循环，播放完毕后就直接暂停
-        if (this.latelyList.length === 1 && this.mode !== 2 && this.playTag.ended) {
+        if (this.songs.length === 1 && this.mode !== 2 && this.playTag.ended) {
           this.$store.commit("setPlayStatus", {
             play: false,
             effect: false
@@ -63,8 +76,8 @@
           console.log('只有一首歌')
           return;
         }
-        for (let i = 0; i < this.latelyList.length; i++) {
-          if (this.latelyList[i].id === this.playData.id) {
+        for (let i = 0; i < this.songs.length; i++) {
+          if (this.songs[i].id === this.playData.id) {
             if (this.mode === 3) {
               this.setRandom(i);
               i = this.random;
@@ -72,18 +85,18 @@
             }
             //=>判断当前播放的歌曲时播放列表的最后一位或者时第一位，实现列表循环
             upOrDown ?
-              (i === this.latelyList.length - 1 ? (i = -1) : null) :
-              (i === 0 ? (i = this.latelyList.length) : null);
+              (i === this.songs.length - 1 ? (i = -1) : null) :
+              (i === 0 ? (i = this.songs.length) : null);
             this.$store.commit("setPlayStatus", {
               play: true,
               effect: true,
-              data: upOrDown ? this.latelyList[++i] : this.latelyList[--i]
+              data: upOrDown ? this.songs[++i] : this.songs[--i]
             });
             return;
           }
         }
       },
-      //=>利用事件冒泡的机制统一控制播放状态
+      //=>利用事件冒泡的机制统一控制播放
       playControl(e) {
         let target = e.target;
         if (target.className === "play-status" ||
@@ -96,10 +109,12 @@
         } else if (target.className === "last-song" ||
           target.parentElement.className === "last-song") {
           //=>上一曲,
+          if (typeof this.playTag === 'undefined') return;
           this.toggleSong()
         } else if (target.className === "next-song" ||
           target.parentElement.className === "next-song") {
           //=>下一曲
+          if (typeof this.playTag === 'undefined') return;
           this.toggleSong(true);
         } else if (
           target.className === "play-mode" ||

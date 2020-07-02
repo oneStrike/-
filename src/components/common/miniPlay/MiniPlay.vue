@@ -1,5 +1,5 @@
 <template>
-  <div v-if="playData.cover"
+  <div v-if="playData.id"
        class="mini-play">
     <div class="cover" @click="$store.commit('setPlayStatus',{showPlayPage:true})">
       <CoverRotate border="3px" :coverURL="playData.cover"></CoverRotate>
@@ -8,91 +8,35 @@
       <span class="song-name">{{playData.name}}</span>
       <span class="singer-name">{{playData.singer}}</span>
     </div>
-    <div class="play" @click.stop="changeStatus">
-      <i v-show="!isPlay" class="iconfont icon-bofang"></i>
-      <i v-show="isPlay" class="iconfont icon-zanting1"></i>
-    </div>
-    <div class="list" @click.stop="isShow">
-      <i class="iconfont icon-caidan1"></i>
-    </div>
-    <div @touchmove.prevent v-show="showList" class="play-list-container">
-      <Scroll :data="singerHitSongs" :scrollY="true">
-        <List :listContent="singerHitSongs"></List>
-      </Scroll>
+    <div class="control">
+      <PlayControl :play-tag="playTag" :modeShow="false" :collect="false"></PlayControl>
     </div>
   </div>
 </template>
 <script>
   import {mapState} from "vuex";
   import CoverRotate from "../../playPage/coverRotate/CoverRotate";
-  import List from "../playList/list/List";
-  import Scroll from "../scroll/Scroll";
-  import {getSingerHitSongs} from "../../../api";
+  import PlayControl from "../../playPage/playControl/PlayControl";
 
   export default {
     name: "MiniPlay",
     data() {
       return {
-        singerHitSongs: [],
-        showList: false,
-        singerName: ''
-      };
+        playTag: '',
+      }
     },
     computed: {
       ...mapState({
         playData: state => state.playPage.playData,
-        latelyList: state => state.playPage.latelyList,
-        isPlay: state => state.playPage.isPlay,
         showPlayPage: state => state.playPage.showPlayPage,
       })
     },
-    methods: {
-      changeStatus() {
-        this.$store.commit('setPlayStatus', {
-          play: !this.isPlay,
-          effect: !this.isPlay,
-        })
-      },
-      isShow() {
-        this.showList = !this.showList;
-        this.$bus.$emit('mini-list', this.showList)
-      }
-    },
-    watch: {
-      playData: {
-        handler: async function (value) {
-          //=>如果播放的都是同一个歌手的名字，只发送一次请求，
-          if (!value || value.singer === this.singer) return;
-          this.singer = value.singer;
-          this.singerHitSongs = [];
-          try {
-            let tempArr = (await getSingerHitSongs(value.singerID)).songs;
-            tempArr.forEach((song) => {
-              this.singerHitSongs.push({
-                name: song.name,
-                singer: value.singer,
-                singerID: value.singerID,
-                id: song.id,
-                time: song.dt,
-                cover: song.al.picUrl,
-              })
-            })
-            tempArr = null;
-          } catch (e) {
-            alert(e)
-          }
-        }
-      },
-      showPlayPage: {
-        handler: function (value) {
-          value ? this.showList = false : null;
-        }
-      }
+    mounted() {
+      this.$bus.$on('audio', (a) => this.playTag = a);
     },
     components: {
       CoverRotate,
-      List,
-      Scroll,
+      PlayControl,
     }
   };
 </script>
@@ -108,6 +52,7 @@
     position: fixed;
     left: 0;
     bottom: 0;
+    z-index: 1;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -115,9 +60,12 @@
     .cover {
       width: 50px;
       height: 50px;
+      margin-right: 10px;
     }
 
     .song {
+      flex: 1;
+
       span {
         width: 150px;
         display: block;
@@ -132,27 +80,11 @@
       }
     }
 
-    .play {
-      .iconfont {
-        font-size: 28px;
-        vertical-align: middle;
-      }
-    }
-
-    .list {
-      .iconfont {
-        font-size: 28px;
-        vertical-align: middle;
-      }
-    }
-
-    .play-list-container {
-      width: 100%;
-      height: 370px;
-      overflow: hidden;
-      position: absolute;
-      left: 0;
-      bottom: 60px;
+    .control {
+      flex: 1;
+      width: 200px;
+      position: relative;
+      bottom: -60px;
     }
   }
 </style>

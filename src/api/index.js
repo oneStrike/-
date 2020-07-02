@@ -56,6 +56,14 @@ export const getTopSearchList = () => instance.get('/search/hot/detail')
 
 export const getSearchSuggest = (key) => instance.get(`/search/suggest?keywords=${key}&type=mobile`)
 
+//歌曲详情，供搜索的歌曲提供封面
+
+export const getSongDetail = (id) => instance.get(`/song/detail?ids=${id}`)
+
+
+//获取歌手分类
+export const getSingers = (type, area) => instance.get(`/artist/list?type=${type}&area=${area}`)
+
 // //推荐电台
 //
 // export const getRadio = () => instance.get('/personalized/djprogram')

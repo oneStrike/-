@@ -12,6 +12,8 @@ const playPage = {
     rotateAndTimer: false, //=>封面和定时器的开启条件
     latelyList: [], //=>存储历史播放的记录
     latelySongID: [],//历史歌曲的id，
+    playSongList: [],//=>将歌单列表独立出来
+    playMode: true,//=>用于判断播放的时历史记录还是歌单
   }),
   getters: {},
   mutations: {
@@ -23,8 +25,12 @@ const playPage = {
       typeof statusObj.effect !== 'undefined' ? state.rotateAndTimer = statusObj.effect : state.rotateAndTimer;
       typeof statusObj.lately !== 'undefined' ? state.latelyList.push(statusObj.lately) : state.latelyList;
       typeof statusObj.URL !== 'undefined' ? state.playURL = statusObj.URL : state.playURL;
+      typeof statusObj.mode !== 'undefined' ? state.playMode = statusObj.mode : state.playMode;
       typeof statusObj.latelySongID !== 'undefined' ? state.latelySongID.push(statusObj.latelySongID) : state.latelySongID;
     },
+    setSongListPlay(state, songList) {
+      state.playSongList = songList.songList;
+    }
   },
   actions: {
     async getSongURL({commit}, id) {

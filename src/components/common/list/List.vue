@@ -1,16 +1,23 @@
 <template>
   <ul ref="slide" class="list-slide">
-    <li @click="playLately(child)"
+    <li @click="$emit('trigger-click', child)"
         v-for="(child,index) in listContent"
         :key="index"
         class="list-content">
-      <span class="count">{{index+1}}</span>
+      <!--      coverShow控制显示封面或者索引值，-->
+      <span v-if="cover&&child.cover" class="count">
+        <img v-lazy="child.cover||child.picUrl" alt="">
+      </span>
+      <span v-else class="count">{{index+1}}</span>
       <div class="list-detail" :class="{'active-play':(child.id&&playData.id === child.id)}">
         <span class="name">
           {{child.name}}
         <img class="icon" v-if="child.icon" :src="child.icon" alt=""></span>
         <span class="singer">{{child.singer}}</span>
         <span class="score" v-if="child.score">{{child.score}}</span>
+        <span class="del" v-show="del" @click.stop="$emit('trigger-del',child)">
+          <i class="iconfont icon-lajixiang"></i>
+        </span>
       </div>
     </li>
   </ul>
@@ -32,11 +39,13 @@
         type: Array,
         default: () => [],
       },
-    },
-    methods: {
-      playLately(child) {
-        //=>分发一个事件，供搜索页面使用
-        this.$emit('trigger-click', child)
+      del: {
+        type: Boolean,
+        default: true,
+      },
+      cover: {
+        type: Boolean,
+        default: false,
       },
     },
   }
@@ -46,7 +55,7 @@
 
   .list-slide {
     width: 100%;
-    background: #f2f3f4;
+    background: #ffffff;
     font-size: 14px;
     text-align: center;
 
@@ -55,8 +64,8 @@
       .bottom-border-1px(#b3aeae);
 
       .count {
-        width: 20%;
-        height: 60px;
+        width: 15%;
+        height: 55px;
         text-align: center;
         line-height: 60px;
         float: left;
@@ -86,13 +95,23 @@
           height: 13px;
         }
 
-        .score {
+        .score, .del {
           float: right;
           padding-right: 10px;
           position: absolute;
           top: 50%;
           margin-top: -15px;
           right: 10px;
+        }
+
+        .del {
+          width: 40px;
+          height: 40px;
+
+          .iconfont {
+            font-size: 22px;
+            vertical-align: middle;
+          }
         }
       }
     }

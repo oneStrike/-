@@ -19,7 +19,7 @@
 <script>
   import {mapState} from "vuex";
   import {utils} from "@/utils/utils";
-  import PlayControl from "@playpage/playControl/PlayControl";
+  import PlayControl from "../playControl/PlayControl";
 
   export default {
     name: "playSong",

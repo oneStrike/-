@@ -24,9 +24,9 @@
 <script>
   import {mapState} from "vuex";
   import {getLyric} from "../../api";
-  import CoverRotate from "@playpage/coverRotate/CoverRotate";
-  import PlaySong from "@playpage/playSong/PlaySong";
-  import Lyric from "@playpage/lyric/Lyric";
+  import CoverRotate from "../../components/playPage/coverRotate/CoverRotate";
+  import PlaySong from "../../components/playPage/playSong/PlaySong";
+  import Lyric from "../../components/playPage/lyric/Lyric";
 
   export default {
     name: "PlayPage",
@@ -34,7 +34,7 @@
       return {
         lyric: '',
         showLyric: false,
-        activeLine: 2
+        activeLine: 2,
       };
     },
     computed: {
@@ -60,24 +60,30 @@
         } catch (e) {
           this.lyric = '暂时没有歌词';
         }
-      }
+      },
+
     },
     mounted() {
-      this.$store.dispatch('getSongURL', this.playData.id);
       this.getLyric()
+      this.$store.dispatch('getSongURL', this.playData.id);
+      this.$store.commit('setPlayStatus', {
+        latelySongID: this.playData.id,
+        lately: this.playData,
+      })
     },
     watch: {
       //=>playData存储的始终是最新播放的歌曲，
       playData: {
         handler: function (value) {
-          console.log(value)
-          this.$store.dispatch("getSongURL", value.id);
-          this.getLyric()
-          if (this.latelySongID.length === 0 || this.latelySongID.indexOf(value.id) === -1) {
-            this.$store.commit('setPlayStatus', {
-              latelySongID: value.id,
-              lately: value,
-            })
+          if (typeof value !== 'undefined') {
+            this.$store.dispatch("getSongURL", value.id);
+            this.getLyric()
+            if (this.latelySongID.length === 0 || this.latelySongID.indexOf(value.id) === -1) {
+              this.$store.commit('setPlayStatus', {
+                latelySongID: value.id,
+                lately: value,
+              })
+            }
           }
         },
         deep: true,

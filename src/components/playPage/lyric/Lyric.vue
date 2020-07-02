@@ -35,7 +35,7 @@
       //=>解析歌词
       reLyric() {
         if (this.lyric) {
-          //=>TODO 经过测试有些歌接口返回的歌词不完整，目前发现 “停不下来”
+          //=>TODO 经过测试有些歌的接口返回的歌词不完整，目前发现 “停不下来”
           this.lyric.replace(/(\[.*?]\s*)(?=\[)/g, "").replace(/\[.*?]/g, time => {
             time = time.split(/\D/);
             time = time.splice(1, 3);
@@ -46,7 +46,7 @@
         return this.lyric.split(/\s*\n*\[.*?]\s*/).filter(v => !!v);
       }
     },
-    mounted() {
+    mounted: function () {
       this.$bus.$on("audio", a => {
         a.addEventListener("timeupdate", () => {
           //=>跳转播放时间，改变歌词

@@ -1,31 +1,22 @@
 <template>
-  <div id="container">
-    <header class="header">
-      <HeaderNav site="6">
-        <template>
-          <div @click="toggleLatelyPlay" class="left">
-            <i class="iconfont icon-caidan left"></i>
-          </div>
-          <div class="center">
-            <h1 class="center">MyMusic</h1>
-          </div>
-          <router-link tag="div" to="/search" class="right">
-            <i class="iconfont icon-sousuosearch82 right"></i>
-          </router-link>
-        </template>
-      </HeaderNav>
-      <nav>
-        <HeaderNav>
-          <template>
-            <router-link to="/recommend">推荐</router-link>
-            <router-link to="/profile">我的</router-link>
-          </template>
-        </HeaderNav>
+  <div id="app">
+    <header class="header-container">
+      <div class="tab-bar">
+        <div @click="toggleLatelyPlay" class="left">
+          <i class="iconfont icon-caidan left"></i>
+        </div>
+        <div class="center">
+          <h1 class="center">MyMusic</h1>
+        </div>
+        <router-link tag="div" to="/search" class="right">
+          <i class="iconfont icon-sousuosearch82 right"></i>
+        </router-link>
+      </div>
+      <nav class="nav-bar">
+        <router-link to="/home">推荐</router-link>
+        <router-link to="/profile">我的</router-link>
       </nav>
     </header>
-    <keep-alive>
-      <router-view></router-view>
-    </keep-alive>
     <!--    播放页面 -->
     <div class="show-palypage" v-show="showPlayPage">
       <keep-alive>
@@ -34,20 +25,25 @@
       </keep-alive>
     </div>
     <!--    //=>侧边栏的历史播放记录-->
-    <transition name="lately">
-      <LatelyPlayList @hide-lately-play="toggleLatelyPlay" v-show="showLatelyPlay"></LatelyPlayList>
-    </transition>
+    <div class="lately">
+      <transition name="lately">
+        <LatelyPlayList @hide-lately-play="toggleLatelyPlay" v-show="showLatelyPlay"></LatelyPlayList>
+      </transition>
+      <aside @touchmove.prevent v-show="showLatelyPlay" @click="toggleLatelyPlay" class="mask"></aside>
+    </div>
     <div class="mini-play">
       <MiniPlay></MiniPlay>
     </div>
+    <keep-alive>
+      <router-view></router-view>
+    </keep-alive>
   </div>
 </template>
 <script>
   import {mapState} from "vuex";
-  import HeaderNav from "@common/headerNav/HeaderNav";
   import PlayPage from '@/views/playPage/PlayPage'
-  import LatelyPlayList from '@common/LatelyPlayList/LatelyPlayList'
-  import MiniPlay from "@common/miniPlay/MiniPlay";
+  import LatelyPlayList from "./components/common/LatelyPlayList/LatelyPlayList";
+  import MiniPlay from "./components/common/miniPlay/MiniPlay";
 
   export default {
     name: 'App',
@@ -68,7 +64,6 @@
       },
     },
     components: {
-      HeaderNav,
       PlayPage,
       LatelyPlayList,
       MiniPlay,
@@ -78,22 +73,27 @@
 <style scoped lang="less">
   @import 'assets/less/mixins';
 
-  #container {
+  #app {
     width: 100%;
-    height: 88px;
     color: @fontcolor;
     position: relative;
 
-    .header {
+    .header-container {
       width: 100%;
+      height: 90px;
       position: fixed;
       top: 0;
       left: 0;
       background: @themecolor;
-      z-index: 100;
+      z-index: 10;
 
-      .center {
-        flex: 3;
+      .tab-bar, .nav-bar {
+        height: 45px;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        line-height: 45px;
+        font-size: 14px;
       }
     }
 
@@ -141,10 +141,21 @@
       bottom: 0;
     }
 
+    .lately {
+      .mask {
+        width: 75px;
+        height: 100%;
+        position: fixed;
+        right: 0;
+        background: rgba(0, 0, 0, .3);
+        z-index: 10;
+        animation: active 300ms linear;
+      }
+    }
+
     .lately-enter-active {
-      transition: transform 300ms linear;
+      transition: transform 200ms linear;
       transform: translate(-100%, 0);
-      background: rgba(0, 0, 0, 0);
     }
 
     .lately-enter-to {
@@ -152,49 +163,18 @@
     }
 
     .lately-leave-active {
-      transition: transform 300ms linear;
+      transition: transform 200ms linear;
       transform: translate(-100%, 0);
-      background: rgba(0, 0, 0, 0);
     }
   }
 
-  .search-enter-active {
-    transform: translateX(100%);
-    transition: transform 300ms linear;
+  @keyframes active {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+      display: block;
+    }
   }
-
-  .search-enter-to {
-    transform: translateX(0);
-  }
-
-  .search-leave-active {
-    transform: translateX(100%);
-    transition: transform 300ms linear;
-  }
-
-  //展示播放页面的动画
-  /*.play-enter-active {*/
-  /*  animation: play-show 500ms linear*/
-  /*}*/
-
-  /*.play-leave-active {*/
-  /*  animation: play-hide 500ms linear;*/
-  /*}*/
-  /*@keyframes play-show {*/
-  /*  from {*/
-  /*    opacity: 0;*/
-  /*  }*/
-  /*  to {*/
-  /*    opacity: 1;*/
-  /*  }*/
-  /*}*/
-
-  /*@keyframes play-hide {*/
-  /*  from {*/
-  /*    opacity: 1;*/
-  /*  }*/
-  /*  to {*/
-  /*    opacity: 0;*/
-  /*  }*/
-  /*}*/
 </style>

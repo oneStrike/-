@@ -9,6 +9,11 @@
 
   export default {
     name: "Scroll",
+    data() {
+      return {
+        scroll: null,
+      }
+    },
     props: {
       data: {
         type: [Array, String],
@@ -37,6 +42,14 @@
       eventPassthrough: {
         type: String,
         default: '',
+      },
+      pullDownRefresh: {
+        type: Boolean,
+        default: false,
+      },
+      pullUpload: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -53,8 +66,19 @@
           scrollX: this.scrollX,
           bounce: this.bounce,
           eventPassthrough: this.eventPassthrough,
+          pullUpload: this.pullUpload,
+          pullDownRefresh: this.pullDownRefresh
         })
-      }
+        if (this.pullUpload) {
+          console.log(1)
+          this.scroll.on('scrollEnd', () => { // 滚动到底部
+            if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+              this.$emit('scrollToEnd')
+              console.log(2)
+            }
+          })
+        }
+      },
     },
     watch: {
       data: {

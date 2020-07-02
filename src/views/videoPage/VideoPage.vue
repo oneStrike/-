@@ -6,6 +6,9 @@
         <i class=" iconfont icon-fanhui"></i>
       </div>
       <h2>{{mvData.name}}</h2>
+      <div class="home" @click="$router.push({path:'/home'})">
+        <i class="iconfont icon-ico-"></i>
+      </div>
     </header>
     <!--    视频-->
     <div class="video">
@@ -21,6 +24,13 @@
       <div v-show="status" class="status" @click.prevent="toggleStatus">
         <i v-show="playing" class="iconfont icon-zanting1"></i>
         <i v-show="!playing" class="iconfont icon-bofang"></i>
+      </div>
+      <div class="extend-play" v-show="curExtend.show">
+        <span>
+          上次播放到
+          <strong @click="extendPlay">{{curExtend.time|reTime}}</strong>，
+          是否继续播放
+        </span>
       </div>
     </div>
     <!--    简介-->
@@ -43,7 +53,7 @@
   import {getMVDetail, getMvUrl, getSimiMv} from "../../api";
   import {utils} from "../../utils/utils";
   import {mapState} from 'vuex';
-  import TopMV from "../../components/recommend/topMV/TopMV";
+  import TopMV from "../../components/home/topMV/TopMV";
 
   export default {
     name: "VideoPage",
@@ -58,6 +68,9 @@
         status: false,//播放状态
         timer: 0,//定时器
         desShow: false,//展示简介
+        curExtend: {},
+        extendContainer: [],
+        extendTimer: '',
       }
     },
     props: ['id'],
@@ -91,8 +104,7 @@
         this.desShow = !this.desShow;
       },
       //=>请求mv数据
-      async refresh(id) {
-        console.log(id)
+      async refresh() {
         if (!this.id) return;
         try {
           this.mvData = (await getMVDetail(this.id)).data;
@@ -103,10 +115,13 @@
         } catch (e) {
           alert(e)
         }
+      },
+      extendPlay() {
+        this.$refs.video.currentTime = this.curExtend.time;
+        this.curExtend = {};
       }
     },
     mounted() {
-      //=>手动暂停歌曲，还以为浏览器会自动暂停
       this.$store.commit('setPlayStatus', {
         play: false,
         effect: false,
@@ -119,9 +134,12 @@
           this.curTime = this.$refs.video.currentTime;
           this.ratio = (this.curTime / this.$refs.video.duration) * 100;
           this.$refs.cur.style.width = this.ratio + "%";
-
         });
       })
+    },
+    beforeRouteLeave(to, from, next) {
+      this.mvUrl = '';
+      next();
     },
     filters: {
       reTime(t) {
@@ -140,9 +158,45 @@
         }
       },
       $route: {
-        handler: function () {
-          console.log('重置')
-          this.refresh()
+        handler: function (n, o) {
+          if (n.meta.name === 'mv') {
+            console.log(n)
+            //=>手动暂停歌曲，还以为浏览器会自动暂停
+            this.$store.commit('setPlayStatus', {
+              play: false,
+              effect: false,
+              showPlayPage: false,
+            })
+            this.refresh()
+
+            //=>不知道时接口的不稳定还是我网络的问题，调试的时候基本都是处于视频卡死的状态，暂时不处理从主页进入展示播放时间记录了
+            if (!o.params.id) return;
+            for (let i = 0; i < this.extendContainer.length; i++) {
+              //=>如果这个mv已经播放过了，并且播放的时间少于总时间-10才显示
+              if (
+                this.extendContainer[i].id === n.params.id &&
+                (this.extendContainer[i].time - 10) < this.$refs.video.duration
+              ) {
+                this.curExtend = this.extendContainer[i];
+              }
+            }
+            this.extendTimer && clearTimeout(this.extendTimer);
+            this.extendTimer = setTimeout(() => {
+              this.curExtend = {};
+            }, 5000)
+            //=>如果这个mv已经播放过一次了，就更新播放时间
+            for (let i = 0; i < this.extendContainer.length; i++) {
+              if (this.extendContainer[i].id === o.params.id) {
+                this.extendContainer[i].time = this.$refs.video.currentTime;
+                return;
+              }
+            }
+            this.extendContainer.push({
+              time: this.$refs.video.currentTime,
+              id: o.params.id,
+              show: true,
+            })
+          }
         }
       }
     },
@@ -172,9 +226,9 @@
       line-height: 40px;
       background: @themecolor;
 
-      .back {
+      .back, .home {
         width: 40px;
-        height: 100%;
+        height: 40px;
         display: inline-block;
         float: left;
 
@@ -182,6 +236,10 @@
           font-size: 20px;
           vertical-align: middle;
         }
+      }
+
+      .home {
+        float: right;
       }
 
       h2 {
@@ -240,6 +298,20 @@
         .iconfont {
           font-size: 50px;
           vertical-align: middle;
+        }
+      }
+
+      .extend-play {
+        width: 100%;
+        height: 30px;
+        font-size: 14px;
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+
+        strong {
+          font-size: 16px;
+          color: @themecolor;
         }
       }
     }

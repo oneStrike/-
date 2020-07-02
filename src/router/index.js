@@ -4,31 +4,38 @@ import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
 //懒加载路由组件
-const recommend = () => import('../views/recommend/Recommend')
+const Home = () => import('../views/home/Home')
 const Profile = () => import('../views/profile/Profile')
 const SongListDetail = () => import('../views/songListDetail/SongListDetail')
 const VideoPage = () => import('../views/videoPage/VideoPage')
 const Search = () => import('../views/search/Search')
-const SearchResult = () => import('../components/searchResult/SearchResult')
-
+const SearchResult = () => import('../components/search/searchResult/SearchResult')
+const Singer = () => import('../views/singer/Singer')
+const SingerDetail = () => import('../components/singerDetail/SingerDetail')
 const routes = [
   {
     path: '/',
-    redirect: '/recommend',
+    redirect: '/home',
   },
   {
-    path: '/recommend',
-    component: recommend,
+    path: '/home',
+    component: Home,
     children: [
       {
-        path: '/recommend/songList/:id',
+        path: '/home/songList/:id',
         component: SongListDetail,
         props: true,
+        meta: {
+          name: 'songList'
+        }
       },
       {
-        path: '/recommend/video/:id',
+        path: '/home/video/:id',
         component: VideoPage,
         props: true,
+        meta: {
+          name: 'mv'
+        }
       }
     ]
   },
@@ -41,9 +48,23 @@ const routes = [
     component: Search,
     children: [
       {
-        path: '/search/result/:key',
+        path: '/search/result/:keywords',
         component: SearchResult,
         props: true,
+      }
+    ]
+  },
+  {
+    path: '/singer',
+    component: Singer,
+    children: [
+      {
+        path: '/singer/singerDetail/:id',
+        component: SingerDetail,
+        props: true,
+        meta: {
+          name: 'singer'
+        }
       }
     ]
   }

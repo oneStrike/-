@@ -1,6 +1,6 @@
 <template>
   <ul id="mv-content">
-    <li @click="skipVideo(mv.id)" v-for="mv in mvData" :key="mv.id">
+    <li @click="$router.push({path:`/home/video/${mv.id}`})" v-for="mv in mvData" :key="mv.id">
       <figure>
         <img v-lazy="mv.cover" :key="mv.cover" alt="">
         <figcaption>{{mv.name}}</figcaption>
@@ -20,21 +20,6 @@
         default: () => []
       }
     },
-    methods: {
-      skipVideo(id) {
-        // this.$router.push({path: '/recommend/video/', query: {id: id}})
-        this.$router.push({path: `/recommend/video/${id}`})
-        //=>分发一个事件实现页面刷新
-        // this.$emit('reload', id)
-        console.log(2)
-        console.log(id)
-      }
-    },
-    // =>无法触发
-    beforeRouteUpdate(to, from, next) {
-      console.log('2')
-      next();
-    }
   }
 </script>
 

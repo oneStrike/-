@@ -12,15 +12,28 @@
       height: 100px;
       background: red;
     }
+
+    .box2 {
+      width: 80px;
+      height: 80px;
+      background: green;
+    }
   </style>
+</head>
 <body>
-<div class="box"></div>
+<div class="box">
+  <div class="box2"></div>
+</div>
 <script>
   let box = document.querySelector('.box');
-  box.addEventListener('click', function () {
+  let box2 = document.querySelector('.box2')
+  box.addEventListener('click', (e) => {
+    box.style.display = 'none'
+    console.log(1)
+  })
+  box2.addEventListener('click', () => {
     console.log(2)
   })
-  box.dispatchEvent(new Event('click'));
 </script>
 </body>
 </html>
