@@ -6,34 +6,11 @@
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
-  <style>
-    .box {
-      width: 100px;
-      height: 100px;
-      background: red;
-    }
-
-    .box2 {
-      width: 80px;
-      height: 80px;
-      background: green;
-    }
-  </style>
 </head>
 <body>
-<div class="box">
-  <div class="box2"></div>
-</div>
 <script>
-  let box = document.querySelector('.box');
-  let box2 = document.querySelector('.box2')
-  box.addEventListener('click', (e) => {
-    box.style.display = 'none'
-    console.log(1)
-  })
-  box2.addEventListener('click', () => {
-    console.log(2)
-  })
+  let obj = JSON.parse({"aid":541275041,"videos":1,"tid":27,"tname":"综合","copyright":1,"pic":"http://i1.hdslb.com/bfs/archive/d4deefb549c4f0ae14f98473838851cbab323630.jpg","title":"建议改成：驰 名 双 标","pubdate":1594461592,"ctime":1594461592,"desc":"视频素材：《喜羊羊与灰太狼》\n只映射这个现象，不针对任何一类人，请勿对号入座","state":0,"attribute":16384,"duration":176,"rights":{"bp":0,"elec":0,"download":0,"movie":0,"pay":0,"hd5":0,"no_reprint":0,"autoplay":1,"ugc_pay":0,"is_cooperation":0,"ugc_pay_preview":0,"no_background":0},"owner":{"mid":13899470,"name":"喜娃桑","face":"http://i2.hdslb.com/bfs/face/b3c8d80a992fda9f31f0823ba3f4f2ad960bd434.jpg"},"stat":{"aid":541275041,"view":174176,"danmaku":1194,"reply":1043,"favorite":2866,"coin":1588,"share":4218,"now_rank":0,"his_rank":0,"like":7016,"dislike":0},"dynamic":"#全能打卡挑战##喜羊羊与灰太狼##buttercup#","cid":211302113,"dimension":{"width":1920,"height":1080,"rotate":0},"bvid":"BV1si4y1V7Lb"})
+  console.log(obj)
 </script>
 </body>
 </html>

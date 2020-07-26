@@ -62,17 +62,6 @@
       })
     },
     methods: {
-      //=>提取歌曲所需的数据
-      getSongInfo(song) {
-        return {
-          name: song.name,
-          id: song.id,
-          time: song.song.duration,
-          singer: song.song.artists[0].name,
-          singerID: song.song.artists[0].id,
-          cover: song.picUrl,
-        }
-      },
       playCurrentSong(s) {
         //=>TODO 添加定时器是为了解决点击穿透，
         if (s.playCount) {
@@ -86,9 +75,8 @@
         }
         //=>点击的歌曲
         if (typeof this.playData.id === 'undefined') {
-          let temp = this.getSongInfo(s)
           this.$store.commit("setPlayStatus", {
-            data: temp,
+            data: utils.reData(s, 'song'),
             showPlayPage: true,
             play: true,
             effect: true,
@@ -96,7 +84,7 @@
           });
         } else if (this.playData.id !== s.id) {
           this.$store.commit("setPlayStatus", {
-            data: this.getSongInfo(s),
+            data: utils.reData(s, 'song'),
             showPlayPage: true,
             play: true,
             effect: true

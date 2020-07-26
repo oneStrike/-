@@ -15,7 +15,7 @@
     <div class="next-song">
       <i class="iconfont icon-xiayiqu"></i>
     </div>
-    <div class="collect" v-if="collect">
+    <div :class="{'like':!like}" class="collect" v-if="collect" @click="collectSong">
       <i class="iconfont icon-aixin"></i>
     </div>
   </div>
@@ -23,6 +23,7 @@
 
 <script>
   import {mapState} from "vuex";
+  import {likeSong} from "../../../api";
 
   export default {
     name: "PlayControl",
@@ -33,12 +34,14 @@
         repeatRandom: null,
         audio: '',
         songs: [],
+        playTag: '',
+        like: true,
       };
     },
     props: {
-      playTag: {
-        type: [HTMLAudioElement, String],
-      },
+      // playTag: {
+      //   type: HTMLAudioElement,
+      // },
       modeShow: {
         type: Boolean,
         default: true,
@@ -73,7 +76,6 @@
             play: false,
             effect: false
           });
-          console.log('只有一首歌')
           return;
         }
         for (let i = 0; i < this.songs.length; i++) {
@@ -81,7 +83,6 @@
             if (this.mode === 3) {
               this.setRandom(i);
               i = this.random;
-              console.log('随机播放第' + i + '首歌')
             }
             //=>判断当前播放的歌曲时播放列表的最后一位或者时第一位，实现列表循环
             upOrDown ?
@@ -121,32 +122,42 @@
           target.parentElement.className === "play-mode"
         ) {
           //=>播放模式
-          this.mode += 1;
+          this.mode++;
           this.mode > 3 ? this.mode = 1 : null;
         }
-      }
+      },
+      async collectSong() {
+        try {
+          //=>点击收藏当前歌曲，无法判断当前播放的歌曲是否已经收藏
+          await likeSong(this.playData.id, this.like)
+          this.like = !this.like;
+        } catch (e) {
+          console.log(e);
+        }
+      },
     },
-    watch: {
-      playTag() {
-        //=>初始播放模式为列表循环
-        this.$nextTick(() => {
-          this.playTag.addEventListener("ended", () => {
-            if (this.mode === 2) {
-              //=>单曲循环
-              this.playTag.currentTime = 0;
-              this.playTag.play();
-              return;
-            }
+    activated() {
+      this.$bus.$on('audio', a => {
+        this.playTag = a;
+        this.playTag.addEventListener("ended", () => {
+          if (this.mode === 2) {
+            //=>单曲循环
+            //loop不自动重播？
+            // this.playTag.loop = true;
+            this.playTag.currentTime = 0.1;
+            this.playTag.play();
+          } else {
             this.toggleSong(true);
-          });
+          }
         });
-      }
+      })
     }
-  }
-  ;
+  };
 </script>
 
 <style scoped lang="less">
+  @import "@less/mixins";
+
   .play-control {
     width: 100%;
     height: 50px;
@@ -168,6 +179,12 @@
       height: 100%;
       display: inline-block;
       font-size: 24px;
+    }
+
+    .like {
+      .iconfont {
+        color: @themecolor;
+      }
     }
   }
 </style>

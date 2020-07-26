@@ -8,6 +8,7 @@
 
 <script>
   import {getSongListDetail} from "../../api";
+  import {utils} from "../../utils/utils";
   import ShowDetail from "../../components/common/showDetail/ShowDetail";
 
   export default {
@@ -45,19 +46,8 @@
     },
     computed: {
       reSongList() {
-        if (!this.detail.tracks) return
-        let temp = [];
-        this.detail.tracks.forEach((item) => {
-          temp.push({
-            name: item.name,
-            id: item.id,
-            time: item.dt,
-            cover: item.al.picUrl,
-            singer: item.ar[0].name,
-            singerID: item.ar[0].id,
-          })
-        })
-        return temp
+        if (!this.detail.tracks) return;
+        return utils.reData(this.detail.tracks, 'song')
       },
     },
     mounted() {

@@ -12,13 +12,24 @@
       <img src="@/assets/images/loading2.gif" alt="">
     </div>
     <section v-show="!loading" class="show-search">
-      <list :cover="true" @trigger-click="playResult" :del="false" :list-content="searchResult"></list>
+      <!--      只是用一个lsit组件的话会造成切换搜索类型时闪烁-->
+      <list v-show="searchType===1" @trigger-click="playResult" :del="false"
+            :list-content="searchResult.single"></list>
+      <list v-show="searchType===100" :cover="true" @trigger-click="playResult" :del="false"
+            :list-content="searchResult.singer"></list>
+      <list v-show="searchType===1004" :cover="true" @trigger-click="playResult" :del="false"
+            :list-content="searchResult.mv">
+      </list>
+      <list v-show="searchType===1000" :cover="true" @trigger-click="playResult" :del="false"
+            :list-content="searchResult.songList">
+      </list>
     </section>
   </div>
 </template>
 
 <script>
   import {getSearch, getSongDetail} from "../../../api";
+  import {utils} from "../../../utils/utils";
   import List from "../../common/list/List";
 
   export default {
@@ -26,11 +37,7 @@
     data() {
       return {
         searchType: 1,
-        searchResult: [],
-        singleResult: [],
-        singerResult: [],
-        mvResult: [],
-        songListResult: [],
+        searchResult: {single: [], singer: [], mv: [], songList: []},
         lastRequest: {key: '', type: '', offset: ''},
         cover: '',
         loading: true,
@@ -43,32 +50,31 @@
       async sendSearch(type, offset) {
         //=>避免重复发送请求
         if (
-          this.lastKey === this.keywords &&
-          this.lastType === type &&
-          offset === this.lastOffset
+          this.lastRequest.key === this.keywords &&
+          this.lastRequest.type === type &&
+          this.lastRequest.offset === offset
         ) return;
-        this.searchResult = [];
         try {
           switch (type) {
             case 1:
-              this.singleResult = (await getSearch(this.keywords, type)).result
+              this.searchResult.single = utils.reData((await getSearch(this.keywords, type)).result.songs, 'song')
               break;
             case 100:
-              this.singerResult = (await getSearch(this.keywords, type)).result
+              this.searchResult.singer = utils.reData((await getSearch(this.keywords, type)).result.artists, 'singer')
               break;
             case 1004:
-              this.mvResult = (await getSearch(this.keywords, type)).result
+              this.searchResult.mv = utils.reData((await getSearch(this.keywords, type)).result.mvs, 'mv')
               break;
             case 1000:
-              this.songListResult = (await getSearch(this.keywords, type)).result
+              this.searchResult.songList = utils.reData((await getSearch(this.keywords, type)).result.playlists, 'songList')
           }
           this.loading = false;
         } catch (e) {
           alert(e);
         }
-        this.lastKey = this.keywords;
-        this.lastType = type;
-        this.lastOffset = offset;
+        this.lastRequest.key = this.keywords;
+        this.lastRequest.type = type;
+        this.lastRequest.offset = offset;
       },
       searchMore(type) {
         this.searchType = type;
@@ -93,8 +99,6 @@
               showPlayPage: true,
               dynamic: 'playPage',
               play: true,
-              lately: data,
-              latelySongID: data.id,
             })
           });
           //=>查看歌单详情
@@ -121,64 +125,6 @@
           this.loading = true;
         },
       },
-      singleResult: {
-        handler: function (value) {
-          if (typeof value.songs === 'undefined') return;
-          value.songs.forEach((item) => {
-            this.searchResult.push({
-              name: item.name,
-              id: item.id,
-              singer: item.artists[0].name,
-              singerID: item.artists[0].id,
-              time: item.duration,
-              type: 'song'
-            })
-          })
-        }
-      },
-      singerResult: {
-        handler: function (value) {
-          if (typeof value.artists === 'undefined') return;
-          value.artists.forEach((item) => {
-            this.searchResult.push({
-              name: item.name,
-              id: item.id,
-              cover: item.picUrl,
-              type: 'singer',
-            })
-          })
-        },
-      },
-      mvResult: {
-        handler: function (value) {
-          if (typeof value.mvs === 'undefined') return;
-          value.mvs.forEach((item) => {
-            this.searchResult.push({
-              name: item.name,
-              id: item.id,
-              cover: item.cover,
-              singer: item.artistName,
-              singerID: item.artistID,
-              des: item.briefDesc,
-              type: 'mv'
-            })
-          })
-        }
-      },
-      songListResult: {
-        handler: function (value) {
-          if (typeof value.playlists === 'undefined') return;
-          value.playlists.forEach((item) => {
-            this.searchResult.push({
-              name: item.name,
-              id: item.id,
-              singer: item.description,
-              cover: item.coverImgUrl,
-              type: 'songList'
-            })
-          })
-        }
-      }
     },
     mounted() {
       this.sendSearch(1);

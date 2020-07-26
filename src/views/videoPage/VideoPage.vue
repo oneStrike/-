@@ -160,7 +160,6 @@
       $route: {
         handler: function (n, o) {
           if (n.meta.name === 'mv') {
-            console.log(n)
             //=>手动暂停歌曲，还以为浏览器会自动暂停
             this.$store.commit('setPlayStatus', {
               play: false,

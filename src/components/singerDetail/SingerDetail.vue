@@ -7,6 +7,7 @@
 
 <script>
   import ShowDetail from "../common/showDetail/ShowDetail";
+  import {utils} from "../../utils/utils";
   import {getSingerHitSongs} from "../../api";
 
   export default {
@@ -20,18 +21,8 @@
     props: ['id'],
     computed: {
       reSingerSongs() {
-        let temp = [];
-        this.singerSongs.forEach((song) => {
-          temp.push({
-            name: song.name,
-            id: song.id,
-            time: song.dt,
-            cover: song.al.picUrl,
-            singer: song.ar[0].name,
-            singerID: song.ar[0].id,
-          })
-        })
-        return temp;
+        if (!this.singerSongs) return;
+        return utils.reData(this.singerSongs, 'song')
       },
     },
     methods: {

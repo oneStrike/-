@@ -58,7 +58,6 @@ L
     methods: {
       //=>播放历史歌曲
       playSong(song) {
-        console.log('播放历史歌曲')
         if (this.playData.id === song.id && this.isPlay) return;
         this.$store.commit("setPlayStatus", {
           data: song,

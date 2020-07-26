@@ -4,8 +4,8 @@
         v-for="(child,index) in listContent"
         :key="index"
         class="list-content">
-      <!--      coverShow控制显示封面或者索引值，-->
-      <span v-if="cover&&child.cover" class="count">
+      <!--      cover控制显示封面或者索引值，-->
+      <span v-if="cover" class="count">
         <img v-lazy="child.cover||child.picUrl" alt="">
       </span>
       <span v-else class="count">{{index+1}}</span>
@@ -32,7 +32,7 @@
       ...mapState({
         playData: state => state.playPage.playData,
         isPlay: state => state.playPage.isPlay,
-      })
+      }),
     },
     props: {
       listContent: {

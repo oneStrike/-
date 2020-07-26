@@ -29,7 +29,7 @@
       </Scroll>
     </section>
     <!--    搜索建议-->
-    <section v-show="searchContent&&suggestShow" class="suggest">
+    <section @touchmove.prevent v-show="searchContent&&suggestShow" class="suggest">
       <span @click="showSearchResult(searchContent)" class="user-input">搜索 "{{searchContent}}"</span>
       <ul class="suggest-content">
         <li @click="showSearchResult(suggest.keyword)" v-for="(suggest,index) in suggest.allMatch" :key="index">

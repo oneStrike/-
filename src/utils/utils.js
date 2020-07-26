@@ -18,5 +18,94 @@ export const utils = {
     const minute = `${Math.floor(time / 60)}`.padStart(2, '0');
     const second = `${Math.floor(time % 60)}`.padStart(2, '0');
     return `${minute}:${second}`;
+  },
+  reData(data, type) {
+    let listData = [];
+    switch (type) {
+      case "song":
+        if (data.constructor === Object) {
+          let songData = song(data.song);
+          songData.cover ? null : songData.cover = data.picUrl;
+          return songData
+        } else {
+          data.forEach((item) => {
+            listData.push(song(item))
+          })
+        }
+        return listData
+      case "singer":
+        if (data.constructor === Object) {
+          return singer(data)
+        } else {
+          data.forEach((item) => {
+            listData.push(singer(item))
+          })
+        }
+        return listData
+      case "mv":
+        if (data.constructor === Object) {
+          return mv(data)
+        } else {
+          data.forEach((item) => {
+            listData.push(mv(item))
+          })
+        }
+        return listData;
+      case "songList":
+        if (data.constructor === Object) {
+          return songList(data)
+        } else {
+          data.forEach((item) => {
+            listData.push(songList(item))
+          })
+        }
+        return listData
+    }
+    return data
+  }
+}
+
+function song(item) {
+  return {
+    name: item.name,
+    id: item.id,
+    singer: item.artists ? item.artists[0].name : item.ar[0].name,
+    singerID: item.artists ? item.artists[0].id : item.ar[0].id,
+    time: item.duration ? item.duration : item.dt,
+    cover: item.al ? item.al.picUrl : '',
+    type: 'song'
+  }
+}
+
+function singer(item) {
+  return {
+    name: item.name,
+    id: item.id,
+    cover: item.picUrl,
+    type: 'singer',
+
+  }
+}
+
+function mv(item) {
+  return {
+    name: item.name,
+    id: item.id,
+    cover: item.cover,
+    singer: item.artistName,
+    singerID: item.artistID,
+    des: item.briefDesc,
+    type: 'mv'
+  }
+}
+
+function songList(item) {
+  return {
+    name: item.name,
+    id: item.id,
+    singer: item.description,
+    cover: item.coverImgUrl,
+    count: item.trackCount ? item.trackCount : null,
+    type: 'songList'
   }
 }

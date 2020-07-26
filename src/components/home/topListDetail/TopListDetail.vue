@@ -38,11 +38,6 @@
         required: true,
       }
     },
-    methods: {
-      playSong() {
-        console.log(this.topListDetail)
-      }
-    },
     components: {
       Scroll,
     }

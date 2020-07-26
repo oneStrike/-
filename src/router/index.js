@@ -3,7 +3,6 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
-//懒加载路由组件
 const Home = () => import('../views/home/Home')
 const Profile = () => import('../views/profile/Profile')
 const SongListDetail = () => import('../views/songListDetail/SongListDetail')
@@ -12,6 +11,10 @@ const Search = () => import('../views/search/Search')
 const SearchResult = () => import('../components/search/searchResult/SearchResult')
 const Singer = () => import('../views/singer/Singer')
 const SingerDetail = () => import('../components/singerDetail/SingerDetail')
+const Login = () => import('../views/login/Login')
+const HistoryPlay = () => import('../components/profile/historyPlay/HistoryPlay')
+const Recommend = () => import('../components/profile/recommend/Recommend')
+
 const routes = [
   {
     path: '/',
@@ -42,6 +45,17 @@ const routes = [
   {
     path: '/profile',
     component: Profile,
+    children: [
+      {
+        path: '/profile/historyPlay/:id',
+        component: HistoryPlay,
+        props: true
+      },
+      {
+        path: '/profile/recommend',
+        component: Recommend,
+      }
+    ]
   },
   {
     path: '/search',
@@ -67,11 +81,14 @@ const routes = [
         }
       }
     ]
+  },
+  {
+    path: '/login',
+    component: Login
   }
 ];
 
 const router = new VueRouter({
   routes,
-  mode: 'hash',
 });
 export default router;

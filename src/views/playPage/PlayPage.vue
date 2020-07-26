@@ -61,9 +61,8 @@
           this.lyric = '暂时没有歌词';
         }
       },
-
     },
-    mounted() {
+    activated() {
       this.getLyric()
       this.$store.dispatch('getSongURL', this.playData.id);
       this.$store.commit('setPlayStatus', {
@@ -76,8 +75,11 @@
       playData: {
         handler: function (value) {
           if (typeof value !== 'undefined') {
+            //=>获取歌曲URL
             this.$store.dispatch("getSongURL", value.id);
+            //=>获取歌词
             this.getLyric()
+            //=>添加进播放列表
             if (this.latelySongID.length === 0 || this.latelySongID.indexOf(value.id) === -1) {
               this.$store.commit('setPlayStatus', {
                 latelySongID: value.id,
@@ -176,7 +178,7 @@
 
     .lyric-small {
       width: 100%;
-      height: 80px;
+      height: 90px;
       overflow: hidden;
       position: absolute;
       top: 65%;

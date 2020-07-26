@@ -15,6 +15,7 @@
 
 <script>
   import {mapState} from 'vuex'
+
   import {getBannerSongDetail} from '../../../api/index'
   import Swiper from "swiper";
   import "swiper/css/swiper.min.css";
@@ -52,7 +53,7 @@
               }
             ]
 
-          } = (await getBannerSongDetail(id)).songs[0]);
+            } = (await getBannerSongDetail(id)).songs[0]);
           this.$store.commit('setPlayStatus', {
             data: temp,
             showPlayPage: true,

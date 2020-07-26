@@ -5,6 +5,10 @@ import store from './store/store'
 import 'lib-flexible'
 import VueLazyLoad from 'vue-lazyload';
 
+import HeaderNav from "./components/common/headerNav/HeaderNav";
+
+Vue.component('HeaderNav', HeaderNav);
+
 //=>懒加载图片，设置加载时的默认图
 Vue.use(VueLazyLoad, {
   loading: require('./assets/images/default.png')

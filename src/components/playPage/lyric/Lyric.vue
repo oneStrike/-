@@ -35,7 +35,7 @@
       //=>解析歌词
       reLyric() {
         if (this.lyric) {
-          //=>TODO 经过测试有些歌的接口返回的歌词不完整，目前发现 “停不下来”
+          //=>TODO 有些歌的接口返回的歌词不完整
           this.lyric.replace(/(\[.*?]\s*)(?=\[)/g, "").replace(/\[.*?]/g, time => {
             time = time.split(/\D/);
             time = time.splice(1, 3);
@@ -43,17 +43,20 @@
             this.lyricTime.push(time);
           });
         }
-        return this.lyric.split(/\s*\n*\[.*?]\s*/).filter(v => !!v);
+        let lyricArr = this.lyric.split(/\s*\n*\[.*?]\s*/).filter(v => !!v);
+        if (this.lyricTime.length < 1) {
+          lyricArr.unshift('**该歌词不支持滚动**')
+        }
+        return lyricArr
       }
     },
-    mounted: function () {
+    mounted() {
       this.$bus.$on("audio", a => {
         a.addEventListener("timeupdate", () => {
           //=>跳转播放时间，改变歌词
           if (a.currentTime < this.curTime || a.currentTime - this.curTime > 1) {
             this.curTime = a.currentTime;
             this.skipLyric();
-            return;
           } else if (this.lyricTime[this.line] <= a.currentTime) {
             //=>正常播放
             this.line++;
@@ -68,8 +71,6 @@
         a.addEventListener("ended", this.initLyric);
         a.addEventListener("durationchange", this.initLyric);
       });
-      //=>在小歌词模式下只显示一行歌词，多行的溢出隐藏，显示多行感觉过于影响美观了
-      this.activeLine === 2 ? this.hide = true : this.hide = false;
     },
     methods: {
       initLyric() {
@@ -88,7 +89,7 @@
         }
         //=>如果跳转的时间点后续没有歌词直接跳转至最后一行
         this.line = this.$refs.lyricDetail.length;
-        this.$refs.lyricContent.style.transform = this.scrollH(this.lyricTime.length - 1);
+        this.$refs.lyricContent.style.transform = this.scrollH(this.$refs.lyricContent.length-1);
       },
       //=>又臭又长的
       scrollH(line) {

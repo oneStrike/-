@@ -1,5 +1,6 @@
 <template>
   <div id="home">
+    <HeaderNav></HeaderNav>
     <div class="banner-container">
       <Banner :banners="banners"></Banner>
     </div>
@@ -16,13 +17,13 @@
           <h2>MV排行榜</h2>
           <ul class="area">
             <li>
-              <button @click="area='内地'">内地</button>
+              <button :class="{'active':area==='内地'}" @click="area='内地'">内地</button>
             </li>
             <li>
-              <button @click="area='欧美'">欧美</button>
+              <button :class="{'active':area==='欧美'}" @click="area='欧美'">欧美</button>
             </li>
             <li>
-              <button @click="area='日本'">日本</button>
+              <button :class="{'active':area==='日本'}" @click="area='日本'">日本</button>
             </li>
           </ul>
         </nav>
@@ -77,13 +78,19 @@
         handler: async function (value) {
           this.topMV = (await getTopMV(value)).data;
         }
-      }
+      },
+      $route: {
+        handler: function (value) {
+          console.log(value.fullPath)
+        }
+      },
+      deep: true,
     },
     components: {
       HomeList,
       Banner,
-      TopMV
-    }
+      TopMV,
+    },
   };
 </script>
 
@@ -92,13 +99,14 @@
 
   #home {
     background: #f2f3f4;
-    padding-top: 90px;
+    padding-top: 70px;
 
     .banner-container {
       width: 100%;
       height: 100%;
       background: @themecolor;
       position: relative;
+      z-index: 0;
 
     }
 
@@ -144,8 +152,14 @@
           button {
             width: 60px;
             height: 30px;
-            border: 1px solid @themecolor;
+            border: 1px solid #ccc;
             font-size: 14px;
+            background: none;
+          }
+
+          & .active {
+            background: @themecolor;
+            color: #fff;
           }
         }
       }
